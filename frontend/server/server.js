@@ -41,7 +41,7 @@ const seedData = require('./src/config/seed');
 
 const { initIO } = require('./src/socket');
 
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 10000;
 // isProduction already defined at top
 
 // --- Environment Validation ---
@@ -225,7 +225,8 @@ const startServer = async () => {
         app.use('/api/invite', require('./src/routes/inviteRoutes'));
         app.use('/health', require('./src/routes/systemRoutes'));
 
-        // Serve static assets in production
+        // Serve static assets in production (DISABLED for API-only mode)
+        /*
         const distPath = path.join(__dirname, 'dist');
         app.use(express.static(distPath));
 
@@ -233,6 +234,7 @@ const startServer = async () => {
         app.get('*', (req, res) => {
             res.sendFile(path.join(distPath, 'index.html'));
         });
+        */
 
         // Error Handler
         app.use(errorHandler);
