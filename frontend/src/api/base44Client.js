@@ -85,7 +85,7 @@ const createEntityService = (endpoint) => ({
 const base44 = {
     auth: {
         me: async () => {
-            const response = await api.get('/auth/me');
+            const response = await api.get('/api/auth/me');
             const data = response.data?.data || response.data;
             // Map backend field names to frontend expected names if necessary
             return {
@@ -103,11 +103,13 @@ const base44 = {
         User: {
             ...createEntityService('users'),
             login: async (credentials) => {
-                const response = await api.post('/auth/login', credentials);
+                console.log("AUTH CALL →", `${API_BASE_URL}/api/auth/login`);
+                const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials);
                 return response.data?.data || response.data;
             },
             signup: async (credentials) => {
-                const response = await api.post('/auth/signup', credentials);
+                console.log("AUTH CALL →", `${API_BASE_URL}/api/auth/signup`);
+                const response = await axios.post(`${API_BASE_URL}/api/auth/signup`, credentials);
                 return response.data?.data || response.data;
             }
         },
