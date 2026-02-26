@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 const AuthContext = createContext();
 
@@ -15,11 +16,10 @@ export const AuthProvider = ({ children }) => {
             if (token) {
                 localStorage.setItem('token', token);
                 try {
-                    const API_URL = import.meta.env.VITE_API_URL || '';
                     const config = {
                         headers: { Authorization: `Bearer ${token}` }
                     };
-                    const { data } = await axios.get(`${API_URL}/api/users/me`, config);
+                    const { data } = await axios.get(`${API_BASE_URL}/api/users/me`, config);
                     setUser(data);
                 } catch (error) {
                     console.error("Auth init failed:", error);
@@ -48,8 +48,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            const API_URL = import.meta.env.VITE_API_URL || '';
-            await axios.post(`${API_URL}/api/users/logout`);
+            await axios.post(`${API_BASE_URL}/api/users/logout`);
         } catch (err) {
             console.error('Logout failed', err);
         } finally {

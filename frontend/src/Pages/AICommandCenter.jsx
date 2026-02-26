@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 import { io } from 'socket.io-client';
 import {
     Activity,
@@ -29,8 +30,8 @@ const AICommandCenter = () => {
 
     const fetchData = async () => {
         try {
-            const metricsRes = await axios.get('/api/system/metrics');
-            const simRes = await axios.get('/api/system/simulation/report');
+            const metricsRes = await axios.get(`${API_BASE_URL}/api/system/metrics`);
+            const simRes = await axios.get(`${API_BASE_URL}/api/system/simulation/report`);
 
             setMetrics(metricsRes.data.data);
             setSimulation(simRes.data.data);
@@ -92,7 +93,7 @@ const AICommandCenter = () => {
     const runSimulation = async () => {
         setSimulating(true);
         try {
-            const res = await axios.post('/api/system/simulation/run', { batchSize: 50 });
+            const res = await axios.post(`${API_BASE_URL}/api/system/simulation/run`, { batchSize: 50 });
             setSimulation(res.data.data);
         } catch (err) {
             console.error('Simulation failed:', err);
@@ -104,7 +105,7 @@ const AICommandCenter = () => {
     const toggleMode = async (mode) => {
         const newValue = !config[mode];
         try {
-            await axios.patch('/api/system/governance/config', { [mode]: newValue });
+            await axios.patch(`${API_BASE_URL}/api/system/governance/config`, { [mode]: newValue });
             setConfig(prev => ({ ...prev, [mode]: newValue }));
         } catch (err) {
             console.error(`Failed to toggle ${mode}:`, err);

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 export function useBackendHealth(backendMode, setBackendMode) {
     useEffect(() => {
@@ -10,9 +11,8 @@ export function useBackendHealth(backendMode, setBackendMode) {
 
         const checkHealth = async () => {
             try {
-                const API_URL = import.meta.env.VITE_API_URL || '';
                 // Lightweight polling on the health endpoint
-                await axios.get(`${API_URL}/api/health`, { timeout: 5000 });
+                await axios.get(`${API_BASE_URL}/api/health`, { timeout: 5000 });
                 if (isPolling) {
                     setBackendMode("FULL");
                     console.log("✅ Backend recovered — Queries Resumed.");

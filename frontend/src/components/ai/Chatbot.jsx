@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../../config/api';
 
 const Chatbot = () => {
     const [messages, setMessages] = useState([]);
@@ -17,8 +18,7 @@ const Chatbot = () => {
         setError(null);
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || '';
-            const response = await fetch(`${apiUrl}/api/ai/chat`, {
+            const response = await fetch(`${API_BASE_URL}/api/ai/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
