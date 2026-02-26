@@ -39,8 +39,8 @@ const registerUser = asyncHandler(async (req, res) => {
         });
         res.status(201).json({
             success: true,
-            message: 'User registered successfully',
-            data: { _id: user.id, name: user.name, email: user.email, role: user.role, token: accessToken }
+            accessToken: accessToken,
+            user: { _id: user.id, name: user.name, email: user.email, role: user.role }
         });
     } else {
         res.status(400);
@@ -76,8 +76,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Login successful',
-            data: { _id: user.id, name: user.name, email: user.email, role: user.role, token: accessToken }
+            accessToken: accessToken,
+            user: { _id: user.id, name: user.name, email: user.email, role: user.role }
         });
     } else {
         res.status(401);
