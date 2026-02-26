@@ -41,7 +41,7 @@ api.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
-                const response = await axios.post(`${API_BASE_URL}/api/users/refresh`, {}, { withCredentials: true });
+                const response = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {}, { withCredentials: true });
                 const { token } = response.data;
                 localStorage.setItem('token', token);
                 api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -85,7 +85,7 @@ const createEntityService = (endpoint) => ({
 const base44 = {
     auth: {
         me: async () => {
-            const response = await api.get('/users/me');
+            const response = await api.get('/auth/me');
             const data = response.data?.data || response.data;
             // Map backend field names to frontend expected names if necessary
             return {
@@ -103,7 +103,11 @@ const base44 = {
         User: {
             ...createEntityService('users'),
             login: async (credentials) => {
-                const response = await api.post('/users/login', credentials);
+                const response = await api.post('/auth/login', credentials);
+                return response.data?.data || response.data;
+            },
+            signup: async (credentials) => {
+                const response = await api.post('/auth/signup', credentials);
                 return response.data?.data || response.data;
             }
         },

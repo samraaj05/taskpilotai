@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
                     const config = {
                         headers: { Authorization: `Bearer ${token}` }
                     };
-                    const { data } = await axios.get(`${API_BASE_URL}/api/users/me`, config);
+                    const { data } = await axios.get(`${API_BASE_URL}/api/auth/me`, config);
                     setUser(data);
                 } catch (error) {
                     console.error("Auth init failed:", error);
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axios.post(`${API_BASE_URL}/api/users/logout`);
+            await axios.post(`${API_BASE_URL}/api/auth/logout`);
         } catch (err) {
             console.error('Logout failed', err);
         } finally {

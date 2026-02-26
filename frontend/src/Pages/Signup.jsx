@@ -21,7 +21,9 @@ export default function Signup() {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await base44.entities.User.create({ name, email, password });
+            const payload = { name, email, password };
+            console.log("Signup payload:", payload);
+            const response = await base44.entities.User.signup(payload);
             login(response, response.token);
             toast.success('Account created successfully');
             navigate('/');

@@ -1,3 +1,3 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "https://taskpilotai-backend.onrender.com";
 
-console.log("API URL:", API_BASE_URL);
+console.log("ACTIVE API:", API_BASE_URL);
