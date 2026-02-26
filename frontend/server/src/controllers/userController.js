@@ -159,16 +159,34 @@ const logoutUser = asyncHandler(async (req, res) => {
     res.sendStatus(204);
 });
 
-const getMe = asyncHandler(async (req, res) => {
-    res.json({
-        success: true,
-        data: {
-            _id: req.user._id,
-            name: req.user.name,
-            email: req.user.email,
-            role: req.user.role,
+const getMe = async (req, res) => {
+    try {
+        console.log('[AUTH_ME_REQUEST]');
+
+        // req.user is already set by protect middleware
+        if (!req.user) {
+            console.log('[AUTH_ME_NO_USER]');
+            return res.status(200).json({
+                success: true,
+                user: null
+            });
         }
-    });
-});
+
+        console.log('[AUTH_ME_SUCCESS]');
+        return res.status(200).json({
+            success: true,
+            user: req.user
+        });
+
+    } catch (err) {
+        console.log('[AUTH_ME_ERROR]', err.message);
+
+        // NEVER CRASH SERVER
+        return res.status(200).json({
+            success: true,
+            user: req.user || null
+        });
+    }
+};
 
 module.exports = { registerUser, loginUser, refresh, logoutUser, getMe };
