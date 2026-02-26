@@ -10,6 +10,7 @@ const {
 const { protect } = require('../middleware/authMiddleware');
 
 router.post('/', registerUser);
+router.post('/signup', registerUser);
 router.post('/login', loginUser);
 router.post('/refresh', refresh);
 router.post('/logout', logoutUser);

@@ -214,6 +214,7 @@ const startServer = async () => {
 
         // Routes
         // API Routes
+        app.use('/api/auth', require('./src/routes/userRoutes'));
         app.use('/api/users', require('./src/routes/userRoutes'));
         app.use('/api/projects', require('./src/routes/projectRoutes'));
         app.use('/api/tasks', require('./src/routes/taskRoutes'));
