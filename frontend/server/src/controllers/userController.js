@@ -48,14 +48,40 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 });
 
-const loginUser = asyncHandler(async (req, res) => {
+const loginUser = async (req, res) => {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (user && (await bcrypt.compare(password, user.password))) {
+    console.log("[LOGIN_REQUEST] Login attempt for:", email);
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            console.log("[LOGIN_ERROR] User not found:", email);
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials"
+            });
+        }
+
+        console.log("[USER_FOUND] User found:", email);
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            console.log("[LOGIN_ERROR] Password mismatch for:", email);
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials"
+            });
+        }
+
         const accessToken = generateAccessToken(user._id);
         const refreshToken = generateRefreshToken(user._id);
+
         user.refreshToken = refreshToken;
         await user.save();
+
+        console.log("[TOKEN_CREATED] Tokens generated for:", email);
+
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -63,27 +89,35 @@ const loginUser = asyncHandler(async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        // Audit Log
-        await logAction({
-            userId: user._id,
-            userEmail: user.email,
-            action: 'USER_LOGIN',
-            entityType: 'User',
-            entityId: user._id,
-            ipAddress: req.ip,
-            userAgent: req.headers['user-agent']
-        });
+        // Audit Log (Optional but kept as it's safe)
+        try {
+            await logAction({
+                userId: user._id,
+                userEmail: user.email,
+                action: 'USER_LOGIN',
+                entityType: 'User',
+                entityId: user._id,
+                ipAddress: req.ip,
+                userAgent: req.headers['user-agent']
+            });
+        } catch (auditError) {
+            console.error("Non-critical audit log failure:", auditError.message);
+        }
 
-        res.json({
+        return res.status(200).json({
             success: true,
             accessToken: accessToken,
             user: { _id: user.id, name: user.name, email: user.email, role: user.role }
         });
-    } else {
-        res.status(401);
-        throw new Error('Invalid credentials');
+
+    } catch (error) {
+        console.error("[LOGIN_ERROR] Unexpected server error:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "Server error"
+        });
     }
-});
+};
 
 const refresh = asyncHandler(async (req, res) => {
     const cookies = req.cookies;
