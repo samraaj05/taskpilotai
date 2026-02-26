@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import { api } from '@/api/base44Client';
+import { toast } from 'sonner';
 import { API_BASE_URL } from '../config/api';
 
 const AuthContext = createContext();
@@ -16,10 +17,7 @@ export const AuthProvider = ({ children }) => {
             if (token) {
                 localStorage.setItem('token', token);
                 try {
-                    const config = {
-                        headers: { Authorization: `Bearer ${token}` }
-                    };
-                    const { data } = await axios.get(`${API_BASE_URL}/api/auth/me`, config);
+                    const { data } = await api.get(`/api/auth/me`);
                     setUser(data);
                 } catch (error) {
                     console.error("Auth init failed:", error);
@@ -48,9 +46,11 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axios.post(`${API_BASE_URL}/api/auth/logout`);
+            await api.post(`/api/auth/logout`);
+            toast.success('Logged out successfully');
         } catch (err) {
             console.error('Logout failed', err);
+            toast.error('Logout failed');
         } finally {
             setUser(null);
             setToken(null);

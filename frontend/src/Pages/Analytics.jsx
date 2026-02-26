@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +27,21 @@ export default function Analytics() {
     queryKey: ['tasks'],
     queryFn: () => base44.entities.Task.list(),
   });
+
+  useEffect(() => {
+    if (analyticsError || tasksError) {
+      toast.error('Failed to load analytics data');
+    }
+  }, [analyticsError, tasksError]);
+
+  const handleRefresh = async () => {
+    try {
+      await refetch();
+      toast.success('Analytics refreshed');
+    } catch (err) {
+      toast.error('Failed to refresh analytics');
+    }
+  };
 
   if (analyticsLoading || tasksLoading) {
     return (
@@ -87,7 +103,7 @@ export default function Analytics() {
           </div>
         </div>
         <Button
-          onClick={() => refetch()}
+          onClick={handleRefresh}
           disabled={isRefetching}
           variant="outline"
           className="border-slate-700 hover:bg-slate-800 text-slate-300 transition-all"

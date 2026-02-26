@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { API_BASE_URL } from '../../config/api';
+import { api } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 const Chatbot = () => {
     const [messages, setMessages] = useState([]);
@@ -18,24 +19,14 @@ const Chatbot = () => {
         setError(null);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/ai/chat`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: input }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Network failure or invalid key');
-            }
-
-            const data = await response.json();
+            const response = await api.post(`/api/ai/chat`, { message: input });
+            const data = response.data?.data || response.data;
 
             const aiMessage = { text: data.reply || 'No response', sender: 'ai' };
             setMessages((prev) => [...prev, aiMessage]);
         } catch (err) {
-            setError(err.message || 'Error communicating with AI');
+            console.error('Chat error:', err);
+            toast.error(err.response?.data?.message || 'Error communicating with AI');
             const errorMessage = { text: 'Error: Could not get response', sender: 'ai', isError: true };
             setMessages((prev) => [...prev, errorMessage]);
         } finally {

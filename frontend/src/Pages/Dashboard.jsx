@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -27,7 +28,7 @@ import WorkloadChart from '@/components/charts/WorkloadChart';
 export default function Dashboard() {
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
+  const { data: user, isLoading: authLoading, isError: authError } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
@@ -39,12 +40,12 @@ export default function Dashboard() {
     select: (data) => data?.[0],
   });
 
-  const { data: projects = [] } = useQuery({
+  const { data: projects = [], isLoading: projectsLoading, isError: projectsError } = useQuery({
     queryKey: ['projects'],
     queryFn: () => base44.entities.Project.filter({ is_archived: false }, '-created_date', 50),
   });
 
-  const { data: tasks = [] } = useQuery({
+  const { data: tasks = [], isLoading: tasksLoading, isError: tasksError } = useQuery({
     queryKey: ['tasks'],
     queryFn: () => base44.entities.Task.list('-created_date', 100),
   });
@@ -63,6 +64,14 @@ export default function Dashboard() {
     queryKey: ['activities'],
     queryFn: () => base44.entities.ActivityLog.list('-created_date', 20),
   });
+
+  const isAnyError = authError || projectsError || tasksError;
+
+  useEffect(() => {
+    if (isAnyError) {
+      toast.error('Failed to load dashboard data');
+    }
+  }, [isAnyError]);
 
   // Calculate stats
   const myTasks = tasks.filter(t => t.assignee_email === user?.email);

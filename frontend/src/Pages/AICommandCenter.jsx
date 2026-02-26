@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { toast } from 'sonner';
+import { api } from '@/api/base44Client';
 import { API_BASE_URL } from '../config/api';
 import { io } from 'socket.io-client';
 import {
@@ -30,18 +31,19 @@ const AICommandCenter = () => {
 
     const fetchData = async () => {
         try {
-            const metricsRes = await axios.get(`${API_BASE_URL}/api/system/metrics`);
-            const simRes = await axios.get(`${API_BASE_URL}/api/system/simulation/report`);
+            const metricsRes = await api.get(`/api/system/metrics`);
+            const simRes = await api.get(`/api/system/simulation/report`);
 
-            setMetrics(metricsRes.data.data);
-            setSimulation(simRes.data.data);
+            setMetrics(metricsRes.data.data || metricsRes.data);
+            setSimulation(simRes.data.data || simRes.data);
             setConfig({
-                chaosMode: metricsRes.data.data.chaosMode === 'true',
-                digitalTwinMode: metricsRes.data.data.digitalTwinMode === 'true'
+                chaosMode: metricsRes.data.data?.chaosMode === 'true',
+                digitalTwinMode: metricsRes.data.data?.digitalTwinMode === 'true'
             });
             setLoading(false);
         } catch (err) {
             console.error('Failed to fetch AI metrics:', err);
+            toast.error('Failed to connect to AI Command Center backend');
         }
     };
 
@@ -93,10 +95,12 @@ const AICommandCenter = () => {
     const runSimulation = async () => {
         setSimulating(true);
         try {
-            const res = await axios.post(`${API_BASE_URL}/api/system/simulation/run`, { batchSize: 50 });
-            setSimulation(res.data.data);
+            const res = await api.post(`/api/system/simulation/run`, { batchSize: 50 });
+            setSimulation(res.data.data || res.data);
+            toast.success('Simulation executed successfully');
         } catch (err) {
             console.error('Simulation failed:', err);
+            toast.error('Simulation execution failed');
         } finally {
             setSimulating(false);
         }
@@ -105,10 +109,12 @@ const AICommandCenter = () => {
     const toggleMode = async (mode) => {
         const newValue = !config[mode];
         try {
-            await axios.patch(`${API_BASE_URL}/api/system/governance/config`, { [mode]: newValue });
+            await api.patch(`/api/system/governance/config`, { [mode]: newValue });
             setConfig(prev => ({ ...prev, [mode]: newValue }));
+            toast.success(`${mode} toggled to ${newValue ? 'ON' : 'OFF'}`);
         } catch (err) {
             console.error(`Failed to toggle ${mode}:`, err);
+            toast.error(`Failed to toggle ${mode}`);
         }
     };
 

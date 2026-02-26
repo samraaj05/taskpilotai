@@ -14,8 +14,10 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
     (config) => {
+        console.log(`[PHASE2_API] Request to: ${config.url}`);
         const token = localStorage.getItem('token');
         if (token) {
+            console.log("[AUTH_TOKEN] Token attached");
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
@@ -31,7 +33,12 @@ api.interceptors.response.use(
         if (error.response) {
             const requestId = error.response.headers['x-request-id'];
             if (requestId) {
-                console.error(`[API-Error-Trace] RequestID: ${requestId}`, {
+                console.error(`[REQUEST_FAIL] RequestID: ${requestId}`, {
+                    url: originalRequest?.url,
+                    status: error.response.status
+                });
+            } else {
+                console.error(`[REQUEST_FAIL]`, {
                     url: originalRequest?.url,
                     status: error.response.status
                 });
@@ -61,23 +68,23 @@ const unwrap = (res) => res.data?.data ?? res.data;
 
 const createEntityService = (endpoint) => ({
     list: async (orderBy = '', limit = 100) => {
-        const response = await api.get(`/${endpoint}`, { params: { orderBy, limit } });
+        const response = await api.get(`/api/${endpoint}`, { params: { orderBy, limit } });
         return unwrap(response);
     },
     filter: async (filterObj = {}, orderBy = '', limit = 100) => {
-        const response = await api.get(`/${endpoint}`, { params: { ...filterObj, orderBy, limit } });
+        const response = await api.get(`/api/${endpoint}`, { params: { ...filterObj, orderBy, limit } });
         return unwrap(response);
     },
     create: async (data) => {
-        const response = await api.post(`/${endpoint}`, data);
+        const response = await api.post(`/api/${endpoint}`, data);
         return unwrap(response);
     },
     update: async (id, data) => {
-        const response = await api.put(`/${endpoint}/${id}`, data);
+        const response = await api.put(`/api/${endpoint}/${id}`, data);
         return unwrap(response);
     },
     delete: async (id) => {
-        const response = await api.delete(`/${endpoint}/${id}`);
+        const response = await api.delete(`/api/${endpoint}/${id}`);
         return unwrap(response);
     },
 });
@@ -122,13 +129,13 @@ const base44 = {
         },
         Activity: {
             feed: async (page = 1, limit = 20) => {
-                const response = await api.get(`/activity?page=${page}&limit=${limit}`);
+                const response = await api.get(`/api/activity?page=${page}&limit=${limit}`);
                 return response.data?.data || response.data;
             }
         },
         Analytics: {
             summary: async () => {
-                const response = await api.get('/analytics');
+                const response = await api.get('/api/analytics');
                 return response.data?.data || response.data;
             }
         },
@@ -139,11 +146,11 @@ const base44 = {
         },
         Invite: {
             get: async (token) => {
-                const response = await api.get(`/invite/${token}`);
+                const response = await api.get(`/api/invite/${token}`);
                 return response.data?.data || response.data;
             },
             accept: async (token) => {
-                const response = await api.post('/invite/accept', { token });
+                const response = await api.post('/api/invite/accept', { token });
                 return response.data?.data || response.data;
             }
         }
@@ -151,11 +158,11 @@ const base44 = {
     integrations: {
         Core: {
             InvokeLLM: async (data) => {
-                const response = await api.post('/ai-insights/invoke', data);
+                const response = await api.post('/api/ai-insights/invoke', data);
                 return response.data?.data || response.data;
             }
         }
     }
 };
 
-export { base44 };
+export { api, base44 };

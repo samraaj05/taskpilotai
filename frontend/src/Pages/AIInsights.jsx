@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +17,21 @@ export default function AIInsights() {
     queryKey: ['aiDashboard'],
     queryFn: () => base44.entities.AIAnalysis.dashboard(),
   });
+
+  useEffect(() => {
+    if (isError) {
+      toast.error('Failed to load AI Insights dashboard');
+    }
+  }, [isError]);
+
+  const handleRefresh = async () => {
+    try {
+      await refetch();
+      toast.success('Insights updated');
+    } catch (err) {
+      toast.error('Failed to refresh insights');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -62,7 +78,7 @@ export default function AIInsights() {
           </div>
         </div>
         <Button
-          onClick={() => refetch()}
+          onClick={handleRefresh}
           disabled={isRefetching}
           className="bg-violet-600 hover:bg-violet-700 text-white font-semibold transition-all hover:scale-105 active:scale-95"
         >
