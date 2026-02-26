@@ -14,19 +14,22 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initAuth = async () => {
-            if (token) {
-                localStorage.setItem('token', token);
+            const storedToken = localStorage.getItem('accessToken');
+            if (storedToken) {
                 try {
                     const { data } = await api.get(`/api/auth/me`);
                     setUser(data);
+                    setToken(storedToken);
                 } catch (error) {
                     console.error("Auth init failed:", error);
-                    localStorage.removeItem('token');
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('user');
                     setToken(null);
                     setUser(null);
                 }
             } else {
-                localStorage.removeItem('token');
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('user');
                 setUser(null);
             }
             setLoading(false);
@@ -37,9 +40,12 @@ export const AuthProvider = ({ children }) => {
         }, 0);
 
         return () => clearTimeout(timer);
-    }, [token]);
+    }, []);
 
     const login = (userData, accessToken) => {
+        console.log("[AUTH_TOKEN_SAVED]", accessToken);
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("user", JSON.stringify(userData));
         setUser(userData);
         setToken(accessToken);
     };
@@ -54,7 +60,8 @@ export const AuthProvider = ({ children }) => {
         } finally {
             setUser(null);
             setToken(null);
-            localStorage.removeItem('token');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('user');
         }
     };
 

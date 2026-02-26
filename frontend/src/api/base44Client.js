@@ -15,7 +15,7 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         console.log(`[PHASE2_API] Request to: ${config.url}`);
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('accessToken');
         if (token) {
             console.log("[AUTH_TOKEN] Token attached");
             config.headers.Authorization = `Bearer ${token}`;
@@ -50,12 +50,13 @@ api.interceptors.response.use(
             try {
                 const response = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {}, { withCredentials: true });
                 const { token } = response.data;
-                localStorage.setItem('token', token);
+                localStorage.setItem('accessToken', token);
                 api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                 return api(originalRequest);
             } catch (err) {
                 // Refresh failed - logout user
-                localStorage.removeItem('token');
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('user');
                 window.location.href = '/login';
                 return Promise.reject(err);
             }

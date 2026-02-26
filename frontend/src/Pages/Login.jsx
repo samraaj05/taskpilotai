@@ -21,11 +21,19 @@ export default function Login() {
         setLoading(true);
         try {
             const response = await base44.entities.User.login({ email, password });
-            login(response, response.token);
-            toast.success('Logged in successfully');
-            navigate('/');
+            // Extract from Axios response.data
+            const { accessToken, user } = response.data;
+
+            if (accessToken) {
+                login(user, accessToken);
+                toast.success('Logged in successfully');
+                navigate('/dashboard');
+            } else {
+                throw new Error("No access token received");
+            }
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Login failed');
+            console.error("Login Error:", error);
+            toast.error(error.response?.data?.message || error.message || 'Login failed');
         } finally {
             setLoading(false);
         }
