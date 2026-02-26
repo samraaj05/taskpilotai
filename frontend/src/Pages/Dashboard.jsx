@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
+import { API_BASE_URL } from '@/config/api';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/lib/utils';
@@ -26,6 +28,13 @@ import ProgressChart from '@/components/charts/ProgressChart';
 import WorkloadChart from '@/components/charts/WorkloadChart';
 
 export default function Dashboard() {
+  const [stats, setStats] = useState({
+    activeProjects: 0,
+    totalTasks: 0,
+    myTasks: 0,
+    teamMembers: 0
+  });
+  const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
 
   const { data: user, isLoading: authLoading, isError: authError } = useQuery({
@@ -72,6 +81,27 @@ export default function Dashboard() {
       toast.error('Failed to load dashboard data');
     }
   }, [isAnyError]);
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      console.log("[PHASE3_FETCH_START] Fetching stats from backend...");
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/dashboard/stats`, {
+          withCredentials: true
+        });
+        if (response.data.success) {
+          setStats(response.data);
+          console.log("[PHASE3_FETCH_SUCCESS] Dashboard stats received");
+        }
+      } catch (error) {
+        console.error("[PHASE3_FETCH_ERROR] Failed to fetch stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, []);
 
   // Calculate stats
   const myTasks = tasks.filter(t => t.assignee_email === user?.email);
@@ -132,7 +162,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Active Projects"
-          value={activeProjects.length}
+          value={loading ? "..." : stats.activeProjects}
           icon={FolderKanban}
           iconColor="violet"
           change={12}
@@ -140,21 +170,21 @@ export default function Dashboard() {
         />
         <StatsCard
           title="Total Tasks"
-          value={tasks.length}
+          value={loading ? "..." : stats.totalTasks}
           icon={ListTodo}
           iconColor="blue"
           subtitle={`${taskStats.completed} completed`}
         />
         <StatsCard
           title="My Tasks"
-          value={myPendingTasks.length}
+          value={loading ? "..." : stats.myTasks}
           icon={Target}
           iconColor="emerald"
           subtitle="Pending tasks"
         />
         <StatsCard
           title="Team Members"
-          value={members.length}
+          value={loading ? "..." : stats.teamMembers}
           icon={Users}
           iconColor="amber"
           subtitle={`${members.filter(m => m.burnout_risk === 'low').length} healthy`}

@@ -225,6 +225,7 @@ const startServer = async () => {
         app.use('/api/analytics', require('./src/routes/analyticsRoutes'));
         app.use('/api/ai', require('./src/routes/ai.routes'));
         app.use('/api/invite', require('./src/routes/inviteRoutes'));
+        app.use('/api/dashboard', require('./src/routes/dashboardRoutes'));
         app.use('/health', require('./src/routes/systemRoutes'));
 
         // Serve static assets in production (DISABLED for API-only mode)
