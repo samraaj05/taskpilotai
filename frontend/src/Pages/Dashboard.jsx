@@ -7,6 +7,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -162,7 +163,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Active Projects"
-          value={loading ? "..." : stats.activeProjects}
+          value={loading ? <Skeleton className="h-9 w-20 bg-slate-700" /> : stats.activeProjects}
           icon={FolderKanban}
           iconColor="violet"
           change={12}
@@ -170,21 +171,21 @@ export default function Dashboard() {
         />
         <StatsCard
           title="Total Tasks"
-          value={loading ? "..." : stats.totalTasks}
+          value={loading ? <Skeleton className="h-9 w-16 bg-slate-700" /> : stats.totalTasks}
           icon={ListTodo}
           iconColor="blue"
           subtitle={`${taskStats.completed} completed`}
         />
         <StatsCard
           title="My Tasks"
-          value={loading ? "..." : stats.myTasks}
+          value={loading ? <Skeleton className="h-9 w-14 bg-slate-700" /> : stats.myTasks}
           icon={Target}
           iconColor="emerald"
           subtitle="Pending tasks"
         />
         <StatsCard
           title="Team Members"
-          value={loading ? "..." : stats.teamMembers}
+          value={loading ? <Skeleton className="h-9 w-12 bg-slate-700" /> : stats.teamMembers}
           icon={Users}
           iconColor="amber"
           subtitle={`${members.filter(m => m.burnout_risk === 'low').length} healthy`}
