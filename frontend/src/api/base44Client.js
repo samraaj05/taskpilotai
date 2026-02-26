@@ -102,16 +102,12 @@ const base44 = {
         Task: createEntityService('tasks'),
         User: {
             ...createEntityService('users'),
-            login: async (credentials) => {
-                console.log("AUTH CALL →", `${API_BASE_URL}/api/auth/login`);
-                const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials);
-                return response.data?.data || response.data;
+            login: (data) => {
+                console.log("AUTH CALL:", `${API_BASE_URL}/api/auth/login`);
+                return axios.post(`${API_BASE_URL}/api/auth/login`, data);
             },
-            signup: async (credentials) => {
-                console.log("AUTH CALL →", `${API_BASE_URL}/api/auth/signup`);
-                const response = await axios.post(`${API_BASE_URL}/api/auth/signup`, credentials);
-                return response.data?.data || response.data;
-            }
+            signup: (data) => axios.post(`${API_BASE_URL}/api/auth/signup`, data),
+            refresh: () => axios.post(`${API_BASE_URL}/api/auth/refresh`, {}, { withCredentials: true })
         },
         TeamMember: createEntityService('team'),
         Workspace: {
