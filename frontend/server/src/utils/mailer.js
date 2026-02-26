@@ -59,6 +59,11 @@ const sendInvitationEmail = async (toEmail, role, inviteToken) => {
             `
         };
 
+        if (process.env.DISABLE_EMAIL === "true") {
+            console.log("[EMAIL_DISABLED_ON_RENDER] Skipping email send to:", toEmail);
+            return true; // Return true so calling code thinks it's sent
+        }
+
         const info = await transporter.sendMail(mailOptions);
         console.log(`Invitation email successfully sent to ${toEmail} [MessageId: ${info.messageId}]`);
         return true;

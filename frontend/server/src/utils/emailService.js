@@ -91,6 +91,11 @@ const sendInviteMail = async (email, role, inviteToken, requestId = null) => {
                 `
             };
 
+            if (process.env.DISABLE_EMAIL === "true") {
+                logger.info(`[EMAIL_DISABLED_ON_RENDER] Skipping email send to ${email}`);
+                return { messageId: 'skipped_disabled' };
+            }
+
             const info = await transporter.sendMail(mailOptions);
             logger.info(`✔ Invite email sent successfully to ${email}`, { requestId });
 
