@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { base44 } from '@/api/base44Client';
+import { base44, api as axios } from '@/api/base44Client';
+import { API_BASE_URL } from '../config/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,8 +21,12 @@ export default function Login() {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await base44.entities.User.login({ email, password });
-            if (response.data.success) {
+            const formData = { email, password };
+            const response = await axios.post(`${API_BASE_URL}/api/auth/login`, formData);
+
+            console.log("[LOGIN_RESPONSE]", response.data);
+
+            if (response.data && response.data.success === true) {
                 const token = response.data.accessToken;
 
                 console.log("[AUTH_TOKEN_RECEIVED]", token);
@@ -33,6 +38,8 @@ export default function Login() {
                 console.log("[NAVIGATING_TO_DASHBOARD]");
 
                 navigate("/dashboard");
+            } else {
+                console.log("[LOGIN_FAILED]", response.data);
             }
         } catch (error) {
             console.error("Login Error:", error);
