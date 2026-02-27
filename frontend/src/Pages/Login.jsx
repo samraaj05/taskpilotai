@@ -30,6 +30,8 @@ export default function Login() {
 
                 console.log("[AUTH_TOKEN_SAVED]", localStorage.getItem("accessToken"));
 
+                console.log("[NAVIGATING_TO_DASHBOARD]");
+
                 navigate("/dashboard");
             }
         } catch (error) {

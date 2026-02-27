@@ -3,7 +3,8 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const ProtectedRoute = ({ children, roles }) => {
-    const { user, token, loading } = useAuth();
+    const { user, loading } = useAuth();
+    const token = localStorage.getItem("accessToken");
     const location = useLocation();
 
     // Memoize the redirect component to prevent unnecessary re-renders

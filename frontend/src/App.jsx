@@ -100,6 +100,7 @@ export default function App() {
                       {/* Protected Routes */}
                       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                         <Route path="/" element={<Dashboard />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/projects" element={<Projects />} />
                         <Route path="/tasks" element={<Tasks />} />
                         <Route path="/team" element={<Team />} />
