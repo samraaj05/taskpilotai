@@ -1,3 +1,4 @@
+// Phase 3 Final Fix - Correct Login Condition
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
