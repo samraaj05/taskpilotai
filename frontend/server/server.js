@@ -213,20 +213,30 @@ const startServer = async () => {
         app.use(cookieParser());
         app.use(requestLogger);
 
-        // Routes
         // API Routes
+        app.use('/health', require('./src/routes/systemRoutes'));
+
+        app.get("/api/health", (req, res) => {
+            return res.status(200).json({
+                status: "UP",
+                success: true,
+                timestamp: new Date()
+            });
+        });
+
         app.use('/api/auth', require('./src/routes/userRoutes'));
+        app.use('/api/tasks', require('./src/routes/taskRoutes'));
+        app.use('/api/dashboard', require('./src/routes/dashboardRoutes'));
+        app.use('/api/ai', require('./src/routes/ai.routes'));
+
+        // Other API Routes
         app.use('/api/users', require('./src/routes/userRoutes'));
         app.use('/api/projects', require('./src/routes/projectRoutes'));
-        app.use('/api/tasks', require('./src/routes/taskRoutes'));
         app.use('/api/team', require('./src/routes/teamRoutes'));
         app.use('/api/ai-insights', require('./src/routes/aiRoutes'));
         app.use('/api/activity', require('./src/routes/activityRoutes'));
         app.use('/api/analytics', require('./src/routes/analyticsRoutes'));
-        app.use('/api/ai', require('./src/routes/ai.routes'));
         app.use('/api/invite', require('./src/routes/inviteRoutes'));
-        app.use('/api/dashboard', require('./src/routes/dashboardRoutes'));
-        app.use('/health', require('./src/routes/systemRoutes'));
 
         // Serve static assets in production (DISABLED for API-only mode)
         /*

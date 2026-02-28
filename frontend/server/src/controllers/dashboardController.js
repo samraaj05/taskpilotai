@@ -18,6 +18,7 @@ exports.getDashboardStats = async (req, res) => {
         let teamMembers = 0;
 
         const userEmail = req.user?.email;
+        const userId = req.user?.id || req.user?._id;
 
         // Only fetch if models exist
         // Fetch counts concurrently for performance

@@ -5,7 +5,7 @@ const User = require('../models/User');
 const { logAction } = require('../utils/auditLogger');
 
 const generateAccessToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
 const generateRefreshToken = (id) => {
