@@ -1,5 +1,4 @@
 require('dotenv').config();
-process.env.DISABLE_EMAIL = "true";
 console.log("ENV LOADED:", !!process.env.SMTP_USER);
 
 const isProduction = process.env.NODE_ENV === 'production';
