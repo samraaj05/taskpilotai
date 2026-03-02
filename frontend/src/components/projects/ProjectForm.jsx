@@ -30,14 +30,14 @@ const priorities = [
   { value: 'critical', label: 'Critical', color: 'bg-rose-500' },
 ];
 
-export default function ProjectForm({ 
-  open, 
-  onClose, 
-  onSubmit, 
+export default function ProjectForm({
+  open,
+  onClose,
+  onSubmit,
   project = null,
   workspaces = [],
   members = [],
-  isLoading = false 
+  isLoading = false
 }) {
   const [formData, setFormData] = useState({
     name: project?.name || '',
@@ -167,12 +167,14 @@ export default function ProjectForm({
             </div>
 
             <div>
-              <Label>Budget</Label>
+              <Label>Estimated Hours</Label>
               <Input
                 type="number"
+                step="0.1"
+                min="0"
                 value={formData.budget}
                 onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                placeholder="0.00"
+                placeholder="Enter hours (e.g., 5)"
                 className="mt-1.5 bg-slate-800 border-slate-700"
               />
             </div>
@@ -193,7 +195,15 @@ export default function ProjectForm({
                   <Calendar
                     mode="single"
                     selected={formData.start_date ? new Date(formData.start_date) : undefined}
-                    onSelect={(date) => setFormData({ ...formData, start_date: date?.toISOString().split('T')[0] })}
+                    onSelect={(selectedDate) => {
+                      if (!selectedDate) return;
+                      const localDate = new Date(
+                        selectedDate.getFullYear(),
+                        selectedDate.getMonth(),
+                        selectedDate.getDate()
+                      );
+                      setFormData({ ...formData, start_date: localDate });
+                    }}
                   />
                 </PopoverContent>
               </Popover>
@@ -215,7 +225,15 @@ export default function ProjectForm({
                   <Calendar
                     mode="single"
                     selected={formData.target_end_date ? new Date(formData.target_end_date) : undefined}
-                    onSelect={(date) => setFormData({ ...formData, target_end_date: date?.toISOString().split('T')[0] })}
+                    onSelect={(selectedDate) => {
+                      if (!selectedDate) return;
+                      const localDate = new Date(
+                        selectedDate.getFullYear(),
+                        selectedDate.getMonth(),
+                        selectedDate.getDate()
+                      );
+                      setFormData({ ...formData, target_end_date: localDate });
+                    }}
                   />
                 </PopoverContent>
               </Popover>

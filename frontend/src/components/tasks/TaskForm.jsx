@@ -49,10 +49,10 @@ const statuses = [
   { value: 'done', label: 'Done' },
 ];
 
-export default function TaskForm({ 
-  open, 
-  onClose, 
-  onSubmit, 
+export default function TaskForm({
+  open,
+  onClose,
+  onSubmit,
   task = null,
   projects = [],
   members = [],
@@ -245,9 +245,11 @@ export default function TaskForm({
               <Label>Estimated Hours</Label>
               <Input
                 type="number"
+                step="0.1"
+                min="0"
                 value={formData.estimated_hours}
                 onChange={(e) => setFormData({ ...formData, estimated_hours: e.target.value })}
-                placeholder="0"
+                placeholder="Enter hours (e.g., 5)"
                 className="mt-1.5 bg-slate-800 border-slate-700"
               />
             </div>
@@ -268,7 +270,15 @@ export default function TaskForm({
                   <Calendar
                     mode="single"
                     selected={formData.start_date ? new Date(formData.start_date) : undefined}
-                    onSelect={(date) => setFormData({ ...formData, start_date: date?.toISOString().split('T')[0] })}
+                    onSelect={(selectedDate) => {
+                      if (!selectedDate) return;
+                      const localDate = new Date(
+                        selectedDate.getFullYear(),
+                        selectedDate.getMonth(),
+                        selectedDate.getDate()
+                      );
+                      setFormData({ ...formData, start_date: localDate });
+                    }}
                   />
                 </PopoverContent>
               </Popover>
@@ -290,7 +300,15 @@ export default function TaskForm({
                   <Calendar
                     mode="single"
                     selected={formData.due_date ? new Date(formData.due_date) : undefined}
-                    onSelect={(date) => setFormData({ ...formData, due_date: date?.toISOString().split('T')[0] })}
+                    onSelect={(selectedDate) => {
+                      if (!selectedDate) return;
+                      const localDate = new Date(
+                        selectedDate.getFullYear(),
+                        selectedDate.getMonth(),
+                        selectedDate.getDate()
+                      );
+                      setFormData({ ...formData, due_date: localDate });
+                    }}
                   />
                 </PopoverContent>
               </Popover>
@@ -321,7 +339,7 @@ export default function TaskForm({
                   )}
                 </Button>
               </div>
-              
+
               {aiSuggestion && (
                 <div className="space-y-2 text-sm">
                   <p className="text-slate-300">

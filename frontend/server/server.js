@@ -116,6 +116,7 @@ const startServer = async () => {
             }
 
             if (process.env.ENABLE_WORKER === 'true') {
+                require('./src/config/redis');
                 const { initWorkers } = require('./src/queue/worker');
                 const { overdueQueue } = require('./src/queue/queue');
 
@@ -265,9 +266,15 @@ const startServer = async () => {
                 logger.info('✔ HTTP Server closed');
 
                 // 2. Terminate Redis (ioredis)
-                const redis = require('./src/config/redis');
-                await redis.quit();
-                logger.info('✔ Redis connection closed');
+                try {
+                    const redis = require('./src/config/redis');
+                    if (redis && redis.quit) {
+                        await redis.quit();
+                        logger.info('✔ Redis connection closed');
+                    }
+                } catch (err) {
+                    logger.warn('Redis not initialized, skipping shutdown.');
+                }
 
                 // 3. Terminate Database
                 await closeDB();
