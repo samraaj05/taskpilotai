@@ -7,9 +7,10 @@ const path = require('path');
 const http = require('http');
 const mongoose = require('mongoose');
 
-const dotenv = require('dotenv').config({
-    path: isProduction ? '.env.production' : '.env'
-});
+console.log("DISABLE_EMAIL VALUE:", process.env.DISABLE_EMAIL);
+console.log("[DEBUG] JWT_SECRET loaded:", process.env.JWT_SECRET ? "YES" : "NO");
+console.log("[DEBUG] JWT_SECRET length:", process.env.JWT_SECRET ? process.env.JWT_SECRET.length : 0);
+
 const express = require('express');
 const logger = require('./src/utils/logger');
 
@@ -45,7 +46,7 @@ const port = process.env.PORT || 10000;
 // isProduction already defined at top
 
 // --- Environment Validation ---
-const requiredEnv = ['JWT_SECRET', 'PORT', 'MONGO_URI', 'SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'];
+const requiredEnv = ['JWT_SECRET', 'PORT', 'MONGO_URI', 'RESEND_API_KEY'];
 const missingEnv = requiredEnv.filter(key => !process.env[key]);
 
 if (missingEnv.length > 0) {
@@ -173,11 +174,15 @@ const startServer = async () => {
         // Apply rate limiter to all /api routes
         app.use('/api', limiter);
 
-        // Global Request Timeout (15s)
+        // Global Request Timeout (30s)
         app.use((req, res, next) => {
-            res.setTimeout(15000, () => {
-                if (!res.headersSent) {
-                    res.status(503).json({ success: false, message: "Request timeout" });
+            res.setTimeout(30000, () => {
+                try {
+                    if (!res.headersSent) {
+                        res.status(503).json({ success: false, message: "Request timeout" });
+                    }
+                } catch (err) {
+                    console.error("Timeout response already sent");
                 }
             });
             next();
