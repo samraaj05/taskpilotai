@@ -242,6 +242,7 @@ const startServer = async () => {
         app.use('/api/activity', require('./src/routes/activityRoutes'));
         app.use('/api/analytics', require('./src/routes/analyticsRoutes'));
         app.use('/api/invite', require('./src/routes/inviteRoutes'));
+        app.use('/api/zoom', require('./src/routes/zoomRoutes'));
 
         // Serve static assets in production (DISABLED for API-only mode)
         /*
