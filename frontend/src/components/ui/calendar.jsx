@@ -28,12 +28,12 @@ function Calendar({
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
-        head_row: "grid grid-cols-7",
+        head_row: "grid grid-cols-7 text-center items-center",
         head_cell:
-          "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] text-center",
+          "text-muted-foreground font-normal text-[0.8rem] w-full h-9 flex items-center justify-center",
         row: "grid grid-cols-7 w-full mt-2",
         cell: cn(
-          "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+          "h-9 w-full text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
           props.mode === "range"
             ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
             : "[&:has([aria-selected])]:rounded-md"
@@ -61,6 +61,12 @@ function Calendar({
         ),
         IconRight: ({ className, ...props }) => (
           <ChevronRight className={cn("h-4 w-4", className)} {...props} />
+        ),
+        HeadRow: ({ className, ...props }) => (
+          <div className={cn("grid grid-cols-7", className)} {...props} />
+        ),
+        HeadCell: ({ className, ...props }) => (
+          <div className={cn("flex items-center justify-center", className)} {...props} />
         ),
       }}
       weekStartsOn={0}
