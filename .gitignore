@@ -14,8 +14,8 @@ frontend/server/logs/
 frontend/server/*.log
 frontend/server/*.txt
 # Allow package.json but ignore other json if needed
+frontend/server/*.json
 !frontend/server/package.json
 !frontend/server/package-lock.json
-frontend/server/*.json
 frontend/server/test_*.js
 frontend/server/verify_*.js
