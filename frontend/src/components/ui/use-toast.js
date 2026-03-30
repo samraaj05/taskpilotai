@@ -7,5 +7,5 @@ export function useToast() {
     alert(`${title}: ${description}`);
   };
 
-  return { toast };
+  return { toast, toasts: [] };
 }
