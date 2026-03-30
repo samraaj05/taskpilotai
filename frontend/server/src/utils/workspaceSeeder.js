@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
-const { faker } = require('@faker-js/faker');
+let faker;
+
+if (process.env.NODE_ENV !== 'production') {
+  faker = require('@faker-js/faker').faker;
+}
 const TeamMember = require('../models/TeamMember');
 const Project = require('../models/Project');
 const Task = require('../models/Task');
@@ -45,34 +49,36 @@ const seedWorkspaceData = async (workspaceId, owner) => {
 
         if (membersToCreate > 0) {
             const newMembers = [];
-            for (let i = 0; i < membersToCreate; i++) {
-                const name = Math.random() > 0.4 ? faker.helpers.arrayElement(INDIAN_NAMES) : faker.person.fullName();
-                const email = faker.internet.email({ firstName: name.split(' ')[0], lastName: name.split(' ')[1] }).toLowerCase();
-                
-                if (currentEmails.includes(email)) continue;
+            if (faker) {
+                for (let i = 0; i < membersToCreate; i++) {
+                    const name = Math.random() > 0.4 ? faker.helpers.arrayElement(INDIAN_NAMES) : faker.person.fullName();
+                    const email = faker.internet.email({ firstName: name.split(' ')[0], lastName: name.split(' ')[1] }).toLowerCase();
+                    
+                    if (currentEmails.includes(email)) continue;
 
-                newMembers.push({
-                    user_email: email,
-                    workspaceId: wsId,
-                    display_name: name,
-                    job_title: faker.helpers.arrayElement(ROLES),
-                    department: faker.helpers.arrayElement(DEPARTMENTS),
-                    role: 'member',
-                    skills: faker.helpers.arrayElements(SKILLS_POOL, { min: 3, max: 5 }).map(s => ({
-                        name: s,
-                        level: faker.helpers.arrayElement(['intermediate', 'advanced', 'expert']),
-                        years_experience: faker.number.int({ min: 1, max: 8 })
-                    })),
-                    status: faker.helpers.arrayElement(['online', 'offline', 'busy']),
-                    joined_date: faker.date.recent({ days: 180 }),
-                    performance_metrics: {
-                        tasks_completed: faker.number.int({ min: 5, max: 40 }),
-                        productivity_score: faker.number.int({ min: 75, max: 98 }),
-                        on_time_rate: faker.number.int({ min: 80, max: 100 })
-                    },
-                    current_workload: faker.number.int({ min: 20, max: 90 })
-                });
-                currentEmails.push(email);
+                    newMembers.push({
+                        user_email: email,
+                        workspaceId: wsId,
+                        display_name: name,
+                        job_title: faker.helpers.arrayElement(ROLES),
+                        department: faker.helpers.arrayElement(DEPARTMENTS),
+                        role: 'member',
+                        skills: faker.helpers.arrayElements(SKILLS_POOL, { min: 3, max: 5 }).map(s => ({
+                            name: s,
+                            level: faker.helpers.arrayElement(['intermediate', 'advanced', 'expert']),
+                            years_experience: faker.number.int({ min: 1, max: 8 })
+                        })),
+                        status: faker.helpers.arrayElement(['online', 'offline', 'busy']),
+                        joined_date: faker.date.recent({ days: 180 }),
+                        performance_metrics: {
+                            tasks_completed: faker.number.int({ min: 5, max: 40 }),
+                            productivity_score: faker.number.int({ min: 75, max: 98 }),
+                            on_time_rate: faker.number.int({ min: 80, max: 100 })
+                        },
+                        current_workload: faker.number.int({ min: 20, max: 90 })
+                    });
+                    currentEmails.push(email);
+                }
             }
             if (newMembers.length > 0) {
                 await TeamMember.create(newMembers);
@@ -85,19 +91,21 @@ const seedWorkspaceData = async (workspaceId, owner) => {
         const projectsToCreate = Math.max(0, 10 - projects.length);
 
         if (projectsToCreate > 0) {
-            for (let i = 0; i < projectsToCreate; i++) {
-                const project = await Project.create({
-                    workspaceId: wsId,
-                    name: `${faker.commerce.productName()} System`,
-                    description: faker.company.catchPhrase(),
-                    status: i < 5 ? 'active' : faker.helpers.arrayElement(['active', 'planning', 'completed']),
-                    health_status: faker.helpers.arrayElement(['excellent', 'good', 'at_risk']),
-                    progress: faker.number.int({ min: 10, max: 90 }),
-                    owner_email: owner.email,
-                    member_emails: faker.helpers.arrayElements(currentEmails, { min: 4, max: 7 }),
-                    target_end_date: faker.date.future({ years: 0.3 })
-                });
-                projects.push(project);
+            if (faker) {
+                for (let i = 0; i < projectsToCreate; i++) {
+                    const project = await Project.create({
+                        workspaceId: wsId,
+                        name: `${faker.commerce.productName()} System`,
+                        description: faker.company.catchPhrase(),
+                        status: i < 5 ? 'active' : faker.helpers.arrayElement(['active', 'planning', 'completed']),
+                        health_status: faker.helpers.arrayElement(['excellent', 'good', 'at_risk']),
+                        progress: faker.number.int({ min: 10, max: 90 }),
+                        owner_email: owner.email,
+                        member_emails: faker.helpers.arrayElements(currentEmails, { min: 4, max: 7 }),
+                        target_end_date: faker.date.future({ years: 0.3 })
+                    });
+                    projects.push(project);
+                }
             }
             logger.info(`[SEEDER] Created ${projectsToCreate} additional projects.`);
         }
@@ -127,24 +135,28 @@ const seedWorkspaceData = async (workspaceId, owner) => {
 
             if (tasksNeeded > 0) {
                 const tasksToAdd = [];
-                for (let j = 0; j < tasksNeeded; j++) {
-                    const status = faker.helpers.arrayElement(['todo', 'in_progress', 'done', 'review', 'backlog']);
-                    tasksToAdd.push({
-                        workspaceId: wsId,
-                        project_id: project._id,
-                        title: `${faker.hacker.verb()} ${faker.hacker.adjective()} ${faker.hacker.noun()}`,
-                        description: faker.hacker.phrase(),
-                        status,
-                        priority: faker.helpers.arrayElement(['low', 'medium', 'high', 'urgent']),
-                        assignee_email: faker.helpers.arrayElement(project.member_emails && project.member_emails.length > 0 ? project.member_emails : currentEmails),
-                        due_date: faker.date.soon({ days: 30 }),
-                        estimated_hours: faker.number.int({ min: 2, max: 16 }),
-                        actual_hours: status === 'done' ? faker.number.int({ min: 2, max: 20 }) : 0,
-                        tags: faker.helpers.arrayElements(['frontend', 'backend', 'api', 'ui', 'bug', 'feature'], { min: 1, max: 3 }),
-                        completed_date: status === 'done' ? new Date() : null
-                    });
+                if (faker) {
+                    for (let j = 0; j < tasksNeeded; j++) {
+                        const status = faker.helpers.arrayElement(['todo', 'in_progress', 'done', 'review', 'backlog']);
+                        tasksToAdd.push({
+                            workspaceId: wsId,
+                            project_id: project._id,
+                            title: `${faker.hacker.verb()} ${faker.hacker.adjective()} ${faker.hacker.noun()}`,
+                            description: faker.hacker.phrase(),
+                            status,
+                            priority: faker.helpers.arrayElement(['low', 'medium', 'high', 'urgent']),
+                            assignee_email: faker.helpers.arrayElement(project.member_emails && project.member_emails.length > 0 ? project.member_emails : currentEmails),
+                            due_date: faker.date.soon({ days: 30 }),
+                            estimated_hours: faker.number.int({ min: 2, max: 16 }),
+                            actual_hours: status === 'done' ? faker.number.int({ min: 2, max: 20 }) : 0,
+                            tags: faker.helpers.arrayElements(['frontend', 'backend', 'api', 'ui', 'bug', 'feature'], { min: 1, max: 3 }),
+                            completed_date: status === 'done' ? new Date() : null
+                        });
+                    }
                 }
-                await Task.insertMany(tasksToAdd);
+                if (tasksToAdd.length > 0) {
+                    await Task.insertMany(tasksToAdd);
+                }
             }
         }
 
@@ -188,20 +200,24 @@ const seedWorkspaceData = async (workspaceId, owner) => {
             const fallbackActorId = owner && (owner._id || owner.id) || new mongoose.Types.ObjectId();
             const fallbackEmail = owner && owner.email || 'admin@taskpilot.ai';
             
-            for (let i = 0; i < logsToCreate; i++) {
-                newLogs.push({
-                    workspaceId: wsId,
-                    actor: fallbackActorId,
-                    actor_email: fallbackEmail,
-                    action: faker.helpers.arrayElement(['TASK_CREATED', 'TASK_UPDATED', 'PROJECT_CREATED', 'TEAM_MEMBER_ADDED']),
-                    entity_type: faker.helpers.arrayElement(['Task', 'Project', 'TeamMember']),
-                    entity_id: wsId,
-                    metadata: { details: 'Enterprise scale data generation' },
-                    ip_address: faker.internet.ip(),
-                    timestamp: faker.date.recent({ days: 14 })
-                });
+            if (faker) {
+                for (let i = 0; i < logsToCreate; i++) {
+                    newLogs.push({
+                        workspaceId: wsId,
+                        actor: fallbackActorId,
+                        actor_email: fallbackEmail,
+                        action: faker.helpers.arrayElement(['TASK_CREATED', 'TASK_UPDATED', 'PROJECT_CREATED', 'TEAM_MEMBER_ADDED']),
+                        entity_type: faker.helpers.arrayElement(['Task', 'Project', 'TeamMember']),
+                        entity_id: wsId,
+                        metadata: { details: 'Enterprise scale data generation' },
+                        ip_address: faker.internet.ip(),
+                        timestamp: faker.date.recent({ days: 14 })
+                    });
+                }
             }
-            await AuditLog.insertMany(newLogs);
+            if (newLogs.length > 0) {
+                await AuditLog.insertMany(newLogs);
+            }
         }
 
         // 5. Cache & Analytics Invalidation
