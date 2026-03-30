@@ -68,10 +68,12 @@ export default function Projects() {
     },
   });
 
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: projectsData, isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: () => base44.entities.Project.filter({ is_archived: false }, '-created_date', 100),
   });
+
+  const projects = Array.isArray(projectsData) ? projectsData : [];
 
   const { data: workspaces = [] } = useQuery({
     queryKey: ['workspaces'],
