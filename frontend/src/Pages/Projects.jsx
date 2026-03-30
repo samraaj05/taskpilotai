@@ -111,7 +111,9 @@ export default function Projects() {
     },
   });
 
-  const filteredProjects = projects.filter(p => {
+  const safeProjects = Array.isArray(projects) ? projects : [];
+
+  const filteredProjects = safeProjects.filter(p => {
     const matchesSearch = p.name?.toLowerCase().includes(search.toLowerCase()) ||
       p.description?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
@@ -206,7 +208,7 @@ export default function Projects() {
               <FolderKanban className="w-4 h-4 text-violet-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{projects.length}</p>
+              <p className="text-2xl font-bold text-white">{safeProjects.length}</p>
               <p className="text-xs text-slate-400">Total Projects</p>
             </div>
           </div>
@@ -218,7 +220,7 @@ export default function Projects() {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">
-                {projects.filter(p => p.status === 'active').length}
+                {safeProjects.filter(p => p.status === 'active').length}
               </p>
               <p className="text-xs text-slate-400">Active</p>
             </div>
@@ -231,7 +233,7 @@ export default function Projects() {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">
-                {projects.filter(p => p.health_status === 'at_risk' || p.health_status === 'critical').length}
+                {safeProjects.filter(p => p.health_status === 'at_risk' || p.health_status === 'critical').length}
               </p>
               <p className="text-xs text-slate-400">At Risk</p>
             </div>
@@ -244,7 +246,7 @@ export default function Projects() {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">
-                {Math.round(projects.reduce((acc, p) => acc + (p.progress || 0), 0) / (projects.length || 1))}%
+                {Math.round(safeProjects.reduce((acc, p) => acc + (p.progress || 0), 0) / (safeProjects.length || 1))}%
               </p>
               <p className="text-xs text-slate-400">Avg Progress</p>
             </div>
@@ -265,7 +267,7 @@ export default function Projects() {
         </div>
       ) : view === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredProjects.map(project => (
+          {(Array.isArray(filteredProjects) ? filteredProjects : []).map(project => (
             <div key={project.id} className="relative group">
               <ProjectCard
                 project={{
@@ -339,7 +341,7 @@ export default function Projects() {
                 </tr>
               </thead>
               <tbody>
-                {filteredProjects.map(project => {
+                {(Array.isArray(filteredProjects) ? filteredProjects : []).map(project => {
                   const progress = getProjectProgress(project.id);
                   const daysLeft = project.target_end_date ?
                     differenceInDays(new Date(project.target_end_date), new Date()) : null;
