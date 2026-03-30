@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from 'sonner';
+import { Toaster as SonnerToaster } from 'sonner';
+import { Toaster } from "@/components/ui/toaster";
 
 // Providers
 import { AuthProvider } from './context/AuthContext';
@@ -48,7 +49,8 @@ export default function App() {
             <NotificationProvider>
               <WorkspaceProvider>
                 <BrowserRouter>
-                  <Toaster richColors position="top-right" />
+                  <SonnerToaster richColors position="top-right" />
+                  <Toaster />
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
                       {/* Public Routes */}

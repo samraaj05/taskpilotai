@@ -15,7 +15,7 @@ import {
   AlertTriangle, Clock, Target, Star, BarChart3, Activity, Brain, Sparkles, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { useToast } from "@/components/ui/use-toast";
 
 const burnoutColors = {
   low: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', label: 'Healthy' },
@@ -32,6 +32,7 @@ const roleColors = {
 
 export default function Team() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [search, setSearch] = useState('');
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showMemberDialog, setShowMemberDialog] = useState(false);
@@ -90,13 +91,21 @@ export default function Team() {
   const handleInvite = async () => {
     try {
       if (!inviteEmail) {
-        toast.error('Please enter an email address');
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please enter an email address",
+        });
         return;
       }
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(inviteEmail)) {
-        toast.error('Please enter a valid email address');
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please enter a valid email address",
+        });
         return;
       }
 
@@ -109,11 +118,18 @@ export default function Team() {
       setInviteEmail('');
       setShowInviteDialog(false);
       queryClient.invalidateQueries({ queryKey: ['members'] });
-      toast.success('Invitation processed!');
+      toast({
+        title: "Invitation Sent",
+        description: "Team member invited successfully",
+      });
     } catch (error) {
       console.error('Failed to send invitation:', error);
       const errorMsg = error.response?.data?.message || error.message || 'Failed to send invitation';
-      toast.error(errorMsg);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMsg,
+      });
     } finally {
       setIsInviting(false);
     }
