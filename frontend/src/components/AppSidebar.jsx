@@ -74,7 +74,7 @@ const items = [
     },
     {
         title: "Google Meet",
-        url: "http://localhost:5001/api/google/auth",
+        url: `${import.meta.env.VITE_API_URL}/api/google/auth`,
         icon: Video,
         isExternal: true
     },

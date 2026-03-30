@@ -8,7 +8,7 @@ function Leaderboard({ projectId }) {
         const fetchLeaderboard = async () => {
             try {
                 const res = await axios.get(
-                    `http://localhost:5001/api/leaderboard/${projectId}`
+                    `${import.meta.env.VITE_API_URL}/api/leaderboard/${projectId}`
                 )
                 setUsers(res.data.leaderboard)
             } catch (err) {
