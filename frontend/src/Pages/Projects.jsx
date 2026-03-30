@@ -114,9 +114,13 @@ export default function Projects() {
   const safeProjects = Array.isArray(projects) ? projects : [];
 
   const filteredProjects = safeProjects.filter(p => {
-    const matchesSearch = p.name?.toLowerCase().includes(search.toLowerCase()) ||
-      p.description?.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+    const matchesSearch =
+        p.name?.toLowerCase().includes(search.toLowerCase()) ||
+        p.description?.toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus =
+        statusFilter === 'all' || p.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
