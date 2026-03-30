@@ -121,7 +121,7 @@ export default function ProjectForm({
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700">
                   {workspaces.map(ws => (
-                    <SelectItem key={ws.id} value={ws.id}>{ws.name}</SelectItem>
+                    <SelectItem key={ws._id || ws.id} value={ws._id || ws.id}>{ws.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

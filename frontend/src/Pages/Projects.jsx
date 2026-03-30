@@ -130,7 +130,7 @@ export default function Projects() {
   const handleCreateProject = (data) => {
     createProjectMutation.mutate({
       ...data,
-      organization_id: workspaces.find(w => w.id === data.workspace_id)?.organization_id,
+      organization_id: workspaces.find(w => (w._id || w.id) === data.workspace_id)?.organization_id,
       status: 'planning',
       progress: 0,
       health_status: 'good',
@@ -138,7 +138,7 @@ export default function Projects() {
   };
 
   const handleUpdateProject = (data) => {
-    updateProjectMutation.mutate({ id: editingProject.id, data });
+    updateProjectMutation.mutate({ id: editingProject._id || editingProject.id, data });
   };
 
   return (
@@ -298,7 +298,7 @@ export default function Projects() {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-slate-700" />
                   <DropdownMenuItem
-                    onClick={() => deleteProjectMutation.mutate(project.id)}
+                    onClick={() => deleteProjectMutation.mutate(project._id || project.id)}
                     className="text-rose-400"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
@@ -431,7 +431,7 @@ export default function Projects() {
                               <Edit className="w-4 h-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-rose-400" onClick={(e) => { e.stopPropagation(); deleteProjectMutation.mutate(project.id); }}>
+                            <DropdownMenuItem className="text-rose-400" onClick={(e) => { e.stopPropagation(); deleteProjectMutation.mutate(project._id || project.id); }}>
                               <Trash2 className="w-4 h-4 mr-2" />
                               Delete
                             </DropdownMenuItem>
