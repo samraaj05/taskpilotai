@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const burnoutColors = {
   low: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', label: 'Healthy' },
@@ -32,7 +33,7 @@ const roleColors = {
 
 export default function Team() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const { toast: shadcnToast } = useToast();
   const [search, setSearch] = useState('');
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showMemberDialog, setShowMemberDialog] = useState(false);
@@ -91,7 +92,7 @@ export default function Team() {
   const handleInvite = async () => {
     try {
       if (!inviteEmail) {
-        toast({
+        shadcnToast({
           variant: "destructive",
           title: "Error",
           description: "Please enter an email address",
@@ -101,7 +102,7 @@ export default function Team() {
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(inviteEmail)) {
-        toast({
+        shadcnToast({
           variant: "destructive",
           title: "Error",
           description: "Please enter a valid email address",
@@ -118,14 +119,14 @@ export default function Team() {
       setInviteEmail('');
       setShowInviteDialog(false);
       queryClient.invalidateQueries({ queryKey: ['members'] });
-      toast({
+      shadcnToast({
         title: "Invitation Sent",
         description: "Team member invited successfully",
       });
     } catch (error) {
       console.error('Failed to send invitation:', error);
       const errorMsg = error.response?.data?.message || error.message || 'Failed to send invitation';
-      toast({
+      shadcnToast({
         variant: "destructive",
         title: "Error",
         description: errorMsg,

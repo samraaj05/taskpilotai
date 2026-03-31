@@ -3,8 +3,8 @@ const nodemailer = require('nodemailer');
 // Add EMAIL_USER and EMAIL_PASS in server/.env manually
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
@@ -71,11 +71,12 @@ const sendInvitationEmail = async (toEmail, role, inviteToken) => {
         console.log(`Invitation email successfully sent to ${toEmail} [MessageId: ${info.messageId}]`);
         return true;
     } catch (error) {
-        console.error("❌ EMAIL SEND ERROR:", error.message);
+        console.error("Email failed:", error);
         return false;
     }
 };
 
 module.exports = {
+    transporter,
     sendInvitationEmail
 };

@@ -256,6 +256,23 @@ const startServer = async () => {
             });
         });
 
+        // Test Mail Route (Diagnostic)
+        app.get("/test-mail", async (req, res) => {
+            try {
+                const { transporter } = require('./src/utils/mailer');
+                await transporter.sendMail({
+                    from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+                    to: "sammarimuthu7@gmail.com",
+                    subject: "Test Mail",
+                    text: "Hello from TaskPilot 🚀",
+                });
+                res.send("Mail sent!");
+            } catch (err) {
+                console.error("Diagnostic Mail Error:", err);
+                res.send(`Mail failed: ${err.message}`);
+            }
+        });
+
         // Detailed Production Health Monitor
         app.get("/api/health/full", async (req, res) => {
             const mongoose = require('mongoose');

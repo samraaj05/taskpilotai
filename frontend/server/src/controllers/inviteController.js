@@ -75,7 +75,7 @@ const acceptInvite = asyncHandler(async (req, res) => {
     }
 
     // Check if user already a member
-    const memberExists = await TeamMember.findOne({ user_email: invite.email, organization_id: invite.workspaceId });
+    const memberExists = await TeamMember.findOne({ user_email: invite.email, workspaceId: invite.workspaceId });
 
     if (memberExists) {
         invite.used = true;
@@ -85,15 +85,18 @@ const acceptInvite = asyncHandler(async (req, res) => {
     }
 
     // Create team member
-    const member = await TeamMember.create({
-        user_email: invite.email,
-        role: invite.role,
-        organization_id: invite.workspaceId,
-        display_name: invite.email.split('@')[0], // Default display name
-        department: invite.department,
-        skills: invite.skills,
-        is_active: true,
-    });
+    // Find and activate existing member or create new one
+    const member = await TeamMember.findOneAndUpdate(
+        { user_email: invite.email, workspaceId: invite.workspaceId },
+        { 
+            is_active: true,
+            role: invite.role,
+            display_name: invite.email.split('@')[0], // Default display name
+            department: invite.department || '',
+            skills: invite.skills || [],
+        },
+        { new: true, upsert: true }
+    );
 
     if (member) {
         invite.used = true;
@@ -202,15 +205,18 @@ const registerViaInvite = asyncHandler(async (req, res) => {
 
     if (user) {
         // Create Team Member
-        await TeamMember.create({
-            user_email: user.email,
-            role: invite.role,
-            organization_id: invite.workspaceId,
-            display_name: user.name,
-            department: invite.department,
-            skills: invite.skills,
-            is_active: true
-        });
+        // Find and activate existing member or create new one
+        await TeamMember.findOneAndUpdate(
+            { user_email: user.email, workspaceId: invite.workspaceId },
+            { 
+                is_active: true,
+                role: invite.role,
+                display_name: user.name,
+                department: invite.department || '',
+                skills: invite.skills || [],
+            },
+            { new: true, upsert: true }
+        );
 
         invite.used = true;
         await invite.save();

@@ -70,32 +70,53 @@ const createTeamMember = asyncHandler(async (req, res) => {
         }
 
         const memberExists = await TeamMember.findOne({ user_email, workspaceId });
+        let member;
 
-        if (memberExists) {
-            res.status(400);
-            throw new Error('Team member already exists');
+        if (!memberExists) {
+            member = await TeamMember.create({
+                user_email,
+                display_name,
+                job_title,
+                department,
+                role: role || 'member',
+                skills: skills || [],
+                domains: domains || [],
+                availability: availability || { hours_per_week: 40 },
+                max_concurrent_tasks: max_concurrent_tasks || 5,
+                workspaceId,
+                is_active: true,
+                current_workload: 0,
+                burnout_risk: 'low'
+            });
+        } else {
+            console.log("ℹ️ Profile already exists, sending re-invitation to:", user_email);
+            member = memberExists;
         }
 
-        const member = await TeamMember.create({
-            user_email,
-            display_name,
-            job_title,
-            department,
+        // Always trigger invitation flow even for direct profile additions
+        const inviteToken = crypto.randomBytes(32).toString("hex");
+        const expiryTime = new Date();
+        expiryTime.setHours(expiryTime.getHours() + 24);
+
+        await Invite.create({
+            inviteToken,
+            email: user_email,
             role: role || 'member',
-            skills: skills || [],
-            domains: domains || [],
-            availability: availability || { hours_per_week: 40 },
-            max_concurrent_tasks: max_concurrent_tasks || 5,
-            workspaceId,
-            is_active: true,
-            current_workload: 0,
-            burnout_risk: 'low'
+            workspaceId: workspaceId,
+            expiryTime,
         });
+
+        try {
+            console.log("Sending invitation email to:", user_email);
+            await sendInvitationEmail(user_email, role || 'member', inviteToken);
+        } catch (emailError) {
+            console.error("Email failed:", emailError);
+        }
 
         return res.status(201).json({
             success: true,
-            message: 'Team member profile created successfully',
-            data: member
+            message: 'Invitation email sent',
+            data: { email: user_email, role: role || 'member' }
         });
     }
 
@@ -111,10 +132,17 @@ const createTeamMember = asyncHandler(async (req, res) => {
     }
 
     const memberExists = await TeamMember.findOne({ user_email, workspaceId });
-
-    if (memberExists) {
-        res.status(400);
-        throw new Error('Team member already exists');
+    
+    // Ensure TeamMember record exists (as inactive) for the invitee
+    if (!memberExists) {
+        await TeamMember.create({
+            user_email,
+            workspaceId,
+            display_name: user_email.split('@')[0],
+            role: role || 'member',
+            is_active: false, // Inactive until they register/accept
+        });
+        console.log("📝 Created placeholder TeamMember for invitee:", user_email);
     }
 
     // Generate unique invite token
@@ -131,25 +159,18 @@ const createTeamMember = asyncHandler(async (req, res) => {
         expiryTime,
     });
 
-    if (invite) {
-        // Send professional HTML invitation email
         try {
-            console.log("📧 Attempting to send invite to:", user_email);
+            console.log("Sending invitation email to:", user_email);
             await sendInvitationEmail(user_email, role || 'member', inviteToken);
-            console.log("✅ Invitation email sent");
         } catch (emailError) {
-            console.error('Email failed but invite stored:', emailError.message);
+            console.error("Email failed:", emailError);
         }
 
         res.status(201).json({
             success: true,
-            message: 'Invitation sent successfully',
+            message: 'Invitation email sent',
             data: { email: user_email, role: role || 'member' }
         });
-    } else {
-        res.status(400);
-        throw new Error('Failed to generate invitation');
-    }
 });
 
 // @desc    Update team member profile
