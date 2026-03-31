@@ -30,7 +30,7 @@ const sendInvitationEmail = async (toEmail, role, inviteToken) => {
         const inviteLink = `${frontendUrl}/invite/${inviteToken}`;
 
         const mailOptions = {
-            from: process.env.EMAIL_USER || '"TaskPilotAI" <no-reply@taskpilotai.com>',
+            from: process.env.EMAIL_FROM || process.env.SMTP_USER || '"TaskPilotAI" <no-reply@taskpilotai.com>',
             to: toEmail,
             subject: "You're invited to TaskPilotAI 🚀",
             text: `You have been invited to join TaskPilotAI as ${role}. Accept here: ${inviteLink}`,
@@ -67,6 +67,7 @@ const sendInvitationEmail = async (toEmail, role, inviteToken) => {
             return true; // Return true so calling code thinks it's sent
         }
 
+        console.log(`📤 Attempting to send invitation email from: ${mailOptions.from} to: ${toEmail}`);
         const info = await transporter.sendMail(mailOptions);
         console.log(`Invitation email successfully sent to ${toEmail} [MessageId: ${info.messageId}]`);
         return true;
