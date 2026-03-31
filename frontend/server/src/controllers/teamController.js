@@ -106,12 +106,10 @@ const createTeamMember = asyncHandler(async (req, res) => {
             expiryTime,
         });
 
-        try {
-            console.log("Sending invitation email to:", user_email);
-            await sendInvitationEmail(user_email, role || 'member', inviteToken);
-        } catch (emailError) {
-            console.error("Email failed:", emailError);
-        }
+        // Send email in background to avoid blocking the API response
+        sendInvitationEmail(user_email, role || 'member', inviteToken)
+            .catch(err => console.error("Background Email failed:", err.message));
+        console.log("Processing background invitation email for:", user_email);
 
         return res.status(201).json({
             success: true,
@@ -159,12 +157,10 @@ const createTeamMember = asyncHandler(async (req, res) => {
         expiryTime,
     });
 
-        try {
-            console.log("Sending invitation email to:", user_email);
-            await sendInvitationEmail(user_email, role || 'member', inviteToken);
-        } catch (emailError) {
-            console.error("Email failed:", emailError);
-        }
+        // Send email in background to avoid blocking the API response
+        sendInvitationEmail(user_email, role || 'member', inviteToken)
+            .catch(err => console.error("Background Email failed:", err.message));
+        console.log("Processing background invitation email for:", user_email);
 
         res.status(201).json({
             success: true,
