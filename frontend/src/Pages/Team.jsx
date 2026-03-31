@@ -15,7 +15,7 @@ import {
   AlertTriangle, Clock, Target, Star, BarChart3, Activity, Brain, Sparkles, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useToast } from "@/components/ui/usetoast";
+import { useToast } from "@/components/ui/use-toast";
 
 const burnoutColors = {
   low: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', label: 'Healthy' },

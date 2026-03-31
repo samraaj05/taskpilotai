@@ -20,7 +20,8 @@ router.get('/callback', async (req, res) => {
         const event = await createMeetingEvent(tokens);
 
         // Redirect back to frontend with the meeting link as a query param
-        res.redirect(`http://localhost:5173/tasks?meetLink=${event.hangoutLink}`);
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        res.redirect(`${frontendUrl}/tasks?meetLink=${event.hangoutLink}`);
     } catch (error) {
         console.error("Google API Error:", error);
         res.status(500).json({
