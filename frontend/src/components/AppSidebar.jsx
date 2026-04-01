@@ -13,10 +13,13 @@ import {
     BrainCircuit,
     Boxes,
     Video,
-    Activity
+    Activity,
+    LogOut
 } from "lucide-react"
 
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher"
+import { useAuth } from "@/context/AuthContext"
+import { SidebarFooter } from "@/components/ui/sidebar"
 
 import {
     Sidebar,
@@ -87,6 +90,7 @@ const items = [
 
 export function AppSidebar() {
     const location = useLocation();
+    const { logout } = useAuth();
 
     return (
         <Sidebar>
@@ -127,6 +131,19 @@ export function AppSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+            <SidebarFooter className="p-4 border-t border-slate-800/50">
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton 
+                            onClick={logout}
+                            className="w-full justify-start gap-3 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            <span className="font-medium">Logout</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarFooter>
         </Sidebar>
     )
 }
