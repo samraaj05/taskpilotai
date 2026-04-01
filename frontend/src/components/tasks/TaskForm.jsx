@@ -376,7 +376,10 @@ export default function TaskForm({
                   disabled={requestingAI}
                 >
                   {requestingAI ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <div className="flex items-center gap-2">
+                       <Loader2 className="w-4 h-4 animate-spin" />
+                       <span className="text-xs font-medium">Analyzing Team...</span>
+                    </div>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4 mr-1" />

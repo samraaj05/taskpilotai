@@ -6,9 +6,9 @@ const { getOrSet, get } = require('../utils/cache');
 const redis = require('../config/redis');
 const { protect } = require('../middleware/authMiddleware');
 
-// Initialize Hugging Face
-const HF_API_KEY = process.env.HUGGING_FACE_API_KEY;
-const HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct";
+// Initialize Google Gemini for AI insights
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 // @desc    Get AI insights from database
 // @route   GET /api/ai-insights
@@ -55,74 +55,51 @@ const invokeLLM = asyncHandler(async (req, res) => {
     const defaultPrefix = "You are an AI insights engine used in a production backend service.";
     const activePrefix = prompt_prefix || defaultPrefix;
 
-    if (!HF_API_KEY) {
+    if (!GEMINI_API_KEY) {
         return res.status(500).json({
-            error: 'HUGGING_FACE_API_KEY is not configured on the server.',
-            recommendation: 'Please add HUGGING_FACE_API_KEY to your server/.env file'
+            success: false,
+            error: 'GEMINI_API_KEY is not configured on the server.',
+            recommendation: 'Please add GEMINI_API_KEY to your server/.env file'
         });
     }
 
     const fullPrompt = `${activePrefix}
+        STRICT RULES:
+        - Return ONLY valid JSON matching the schema below.
+        - No markdown, no conversational text.
 
-Your task is to analyze the provided input data and generate clear, actionable insights.
+        SCHEMA:
+        ${response_json_schema ? JSON.stringify(response_json_schema, null, 2) : "JSON block"}
 
-STRICT RULES:
-- Return ONLY valid JSON.
-- Do NOT include explanations, markdown, or extra text.
-- Follow the schema exactly.
-- Use concise, professional language.
-
-JSON SCHEMA:
-${response_json_schema ? JSON.stringify(response_json_schema, null, 2) : JSON.stringify({
-  "summary": "High-level overview in 1–2 sentences",
-  "key_findings": ["Observation 1", "Observation 2", "Observation 3"],
-  "risks": ["Identified risk 1", "Identified risk 2"],
-  "recommendations": ["Actionable recommendation 1", "Actionable recommendation 2"]
-}, null, 2)}
-
-INPUT DATA:
-${typeof inputData === 'string' ? inputData : JSON.stringify(inputData, null, 2)}`;
-
-    const { postAIRequest } = require('../utils/aiClient');
-
-    const result = await postAIRequest(
-        'https://router.huggingface.co/v1/chat/completions',
-        {
-            model: HF_MODEL,
-            messages: [{ role: 'user', content: fullPrompt }],
-            max_tokens: 1000,
-            stream: false
-        },
-        {
-            Authorization: `Bearer ${HF_API_KEY}`,
-            'Content-Type': 'application/json',
-        },
-        req.requestId
-    );
-
-    if (result.success === false) {
-        return res.status(503).json(result);
-    }
-
-    const text = result.choices[0].message.content;
-    
-    // Improved JSON extraction - handles markdown blocks, lead-in text, etc.
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    const jsonString = jsonMatch ? jsonMatch[0] : text;
+        INPUT:
+        ${typeof inputData === 'string' ? inputData : JSON.stringify(inputData)}
+    `;
 
     try {
-        // Clean up any remaining backticks if the regex was too greedy
+        const response = await axios.post(GEMINI_URL, {
+            contents: [{ parts: [{ text: fullPrompt }] }],
+            generationConfig: { maxOutputTokens: 1000, temperature: 0.2 }
+        });
+
+        const text = response.data.candidates[0].content.parts[0].text;
+        
+        // Improved JSON extraction - handles markdown blocks, lead-in text, etc.
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const jsonString = jsonMatch ? jsonMatch[0] : text;
+
         const cleanJsonString = jsonString.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
         const jsonResponse = JSON.parse(cleanJsonString);
+        
         res.status(200).json({
             success: true,
             data: jsonResponse
         });
-    } catch (parseError) {
-        console.error("AI JSON Parse Error:", parseError.message, "Raw Text:", text);
+    } catch (err) {
+        console.error("AI Assignment Migration Error:", err.response?.data || err.message);
         res.status(500).json({
-            error: 'AI returned invalid JSON structure',
-            raw_text: text
+            success: false,
+            error: 'AI suggest failed',
+            details: err.message
         });
     }
 });
