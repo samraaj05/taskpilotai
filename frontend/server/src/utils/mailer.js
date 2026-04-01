@@ -3,13 +3,21 @@ const nodemailer = require('nodemailer');
 // Add EMAIL_USER and EMAIL_PASS in server/.env manually
 const smtpPort = parseInt(process.env.SMTP_PORT) || 465;
 const transporter = nodemailer.createTransport({
+    pool: true, // Use a pool of connections for better stability
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: smtpPort,
     secure: smtpPort === 465, // true for 465, false for 587
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
-    }
+    },
+    tls: {
+        // Do not fail on invalid certificates (helpful for some restrictive environments)
+        rejectUnauthorized: false
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 30000,
 });
 
 console.log("MAILER ENV CHECK:", {
