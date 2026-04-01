@@ -146,8 +146,8 @@ const createInvite = asyncHandler(async (req, res) => {
     if (invite) {
         // Optional: Send real email if mailer is configured
         try {
-            if (process.env.MAIL_USER) {
-                await sendInvitationEmail(email, inviteToken, workspaceId);
+            if (process.env.SMTP_USER) {
+                await sendInvitationEmail(email, role || 'member', inviteToken);
             }
         } catch (err) {
             console.error("Mail send failed:", err.message);
