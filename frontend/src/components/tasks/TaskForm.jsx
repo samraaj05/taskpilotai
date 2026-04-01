@@ -145,9 +145,12 @@ export default function TaskForm({
   const requestAISuggestion = async () => {
     if (!onRequestAISuggestion) return;
     setRequestingAI(true);
-    const suggestion = await onRequestAISuggestion(formData);
-    setAiSuggestion(suggestion);
-    setRequestingAI(false);
+    try {
+      const suggestion = await onRequestAISuggestion(formData);
+      setAiSuggestion(suggestion);
+    } finally {
+      setRequestingAI(false);
+    }
   };
 
   const applyAISuggestion = () => {

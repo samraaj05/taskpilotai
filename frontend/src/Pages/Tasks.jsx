@@ -180,46 +180,54 @@ export default function Tasks() {
 
   const requestAISuggestion = async (taskData) => {
     setAiLoading(true);
+    try {
+      const prompt = `
+        Analyze this task and suggest the best team member to assign it to.
+        
+        Task Details:
+        - Title: ${taskData.title}
+        - Description: ${taskData.description || 'No description'}
+        - Domain: ${taskData.domain}
+        - Difficulty: ${taskData.difficulty}
+        - Priority: ${taskData.priority}
+        - Required Skills: ${taskData.required_skills?.join(', ') || 'None specified'}
+        - Estimated Hours: ${taskData.estimated_hours || 'Not specified'}
+        
+        Available Team Members:
+        ${members.map(m => `
+          - ${m.display_name || m.user_email}: 
+            Skills: ${m.skills?.map(s => `${s.name} (${s.level})`).join(', ') || 'Not specified'}
+            Workload: ${m.current_workload || 0}%
+            Domains: ${m.domains?.join(', ') || 'Not specified'}
+        `).join('\n')}
+        
+        Based on skills match, workload balance, and domain expertise, suggest the best assignee.
+      `;
 
-    const prompt = `
-      Analyze this task and suggest the best team member to assign it to.
-      
-      Task Details:
-      - Title: ${taskData.title}
-      - Description: ${taskData.description || 'No description'}
-      - Domain: ${taskData.domain}
-      - Difficulty: ${taskData.difficulty}
-      - Priority: ${taskData.priority}
-      - Required Skills: ${taskData.required_skills?.join(', ') || 'None specified'}
-      - Estimated Hours: ${taskData.estimated_hours || 'Not specified'}
-      
-      Available Team Members:
-      ${members.map(m => `
-        - ${m.display_name || m.user_email}: 
-          Skills: ${m.skills?.map(s => `${s.name} (${s.level})`).join(', ') || 'Not specified'}
-          Workload: ${m.current_workload || 0}%
-          Domains: ${m.domains?.join(', ') || 'Not specified'}
-      `).join('\n')}
-      
-      Based on skills match, workload balance, and domain expertise, suggest the best assignee.
-    `;
-
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          suggested_assignee: { type: 'string', description: 'Email of suggested assignee' },
-          confidence_score: { type: 'number', description: 'Confidence 0-1' },
-          reasoning: { type: 'string', description: 'Why this person' },
-          estimated_hours: { type: 'number', description: 'Estimated hours to complete' },
-          suggested_due_date: { type: 'string', description: 'Suggested due date YYYY-MM-DD' },
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt,
+        prompt_prefix: "You are a lead project manager and technical lead helping to assign tasks within a team.",
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            suggested_assignee: { type: 'string', description: 'Email of suggested assignee' },
+            confidence_score: { type: 'number', description: 'Confidence 0-1' },
+            reasoning: { type: 'string', description: 'Why this person' },
+            estimated_hours: { type: 'number', description: 'Estimated hours to complete' },
+            suggested_due_date: { type: 'string', description: 'Suggested due date YYYY-MM-DD' },
+          },
+          required: ['suggested_assignee', 'confidence_score', 'reasoning']
         },
-      },
-    });
+      });
 
-    setAiLoading(false);
-    return result;
+      return result;
+    } catch (error) {
+      console.error("AI Suggestion Error:", error);
+      // Optional: Add toast error here if you have access to a toast library in this context
+      return null;
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const taskStats = {

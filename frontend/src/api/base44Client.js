@@ -6,7 +6,7 @@ const API_URL = API_BASE_URL;
 
 const api = axios.create({
     baseURL: API_URL,
-    timeout: 15000, // 15 second timeout for safety
+    timeout: 30000, // 30 second timeout for AI stability
     headers: {
         'Content-Type': 'application/json',
     },
@@ -41,7 +41,7 @@ api.interceptors.response.use(
         const originalRequest = error.config;
         
         if (error.code === 'ECONNABORTED') {
-            console.error(`[TIMEOUT] Request to ${originalRequest?.url} timed out after 5s`);
+            console.error(`[TIMEOUT] Request to ${originalRequest?.url} timed out after 30s`);
             toast.error('Connection slow', { description: 'Some data might not be up to date.' });
             return Promise.reject(error);
         }

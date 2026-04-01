@@ -49,7 +49,11 @@ const createInsight = asyncHandler(async (req, res) => {
 // @route   POST /api/ai-insights/invoke
 // @access  Public
 const invokeLLM = asyncHandler(async (req, res) => {
-    const { prompt: inputData } = req.body;
+    const { prompt: inputData, prompt_prefix, response_json_schema } = req.body;
+    
+    // Choose the appropriate prompt prefix
+    const defaultPrefix = "You are an AI insights engine used in a production backend service.";
+    const activePrefix = prompt_prefix || defaultPrefix;
 
     if (!HF_API_KEY) {
         return res.status(500).json({
@@ -58,7 +62,7 @@ const invokeLLM = asyncHandler(async (req, res) => {
         });
     }
 
-    const fullPrompt = `You are an AI insights engine used in a production backend service.
+    const fullPrompt = `${activePrefix}
 
 Your task is to analyze the provided input data and generate clear, actionable insights.
 
@@ -69,22 +73,12 @@ STRICT RULES:
 - Use concise, professional language.
 
 JSON SCHEMA:
-{
+${response_json_schema ? JSON.stringify(response_json_schema, null, 2) : JSON.stringify({
   "summary": "High-level overview in 1–2 sentences",
-  "key_findings": [
-    "Observation 1",
-    "Observation 2",
-    "Observation 3"
-  ],
-  "risks": [
-    "Identified risk 1",
-    "Identified risk 2"
-  ],
-  "recommendations": [
-    "Actionable recommendation 1",
-    "Actionable recommendation 2"
-  ]
-}
+  "key_findings": ["Observation 1", "Observation 2", "Observation 3"],
+  "risks": ["Identified risk 1", "Identified risk 2"],
+  "recommendations": ["Actionable recommendation 1", "Actionable recommendation 2"]
+}, null, 2)}
 
 INPUT DATA:
 ${typeof inputData === 'string' ? inputData : JSON.stringify(inputData, null, 2)}`;
