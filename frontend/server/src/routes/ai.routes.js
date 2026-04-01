@@ -34,8 +34,7 @@ async function askGemini(promptText, maxOutputTokens = 800) {
 }
 
 router.post('/chat', async (req, res) => {
-    console.log("Gemini key loaded:", process.env.GEMINI_API_KEY ? "YES" : "NO");
-    const { message: userMessage, projectId } = req.body;
+    const { message: userMessage, projectId, history = [] } = req.body;
 
     if (!userMessage) {
         return res.status(400).json({ success: false, message: 'Message is required' });
@@ -44,6 +43,7 @@ router.post('/chat', async (req, res) => {
     try {
         const msg = userMessage.toLowerCase();
 
+        // 1. PROJECT SUMMARIZATION (No context needed)
         if (msg.includes("summarize project") && projectId) {
             const project = await Project.findById(projectId);
             const tasks = await Task.find({ project: projectId });
@@ -60,6 +60,7 @@ ${members.map(m => m.name).join(", ")}
 `;
             const prompt = `
 You are an AI assistant for a project management platform called TaskPilot.
+Today's Date: ${new Date().toDateString()}
 
 Summarize this project in 4 bullet points.
 
@@ -69,9 +70,11 @@ ${context}
             return res.json({ reply: aiReply });
         }
 
+        // 2. TASK EXTRACTION (No context needed)
         if (msg.includes("create task") && projectId) {
             const prompt = `
 Extract task information from the following message.
+Today's Date: ${new Date().toDateString()}
 
 Return JSON only with:
 title
@@ -81,7 +84,7 @@ description
 Message:
 ${userMessage}
 `;
-            const aiReply = await askGemini(prompt, 150);
+            const aiReply = await askGemini(prompt, 200);
 
             const jsonMatch = aiReply.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
@@ -100,6 +103,7 @@ ${userMessage}
             }
         }
 
+        // 3. CHAT SUMMARIZATION (No context needed)
         if (msg.includes("summarize chat") && projectId) {
             const messages = await ChatMessage
                 .find({ projectId })
@@ -113,6 +117,7 @@ ${userMessage}
 
             const prompt = `
 Summarize the following team discussion in 4 bullet points.
+Today's Date: ${new Date().toDateString()}
 
 Chat Messages:
 ${chatText}
@@ -121,16 +126,24 @@ ${chatText}
             return res.json({ reply: aiReply });
         }
 
+        // 4. GENERAL CHAT (WITH CONTEXT)
+        const chatContext = history.slice(-5).map(m => `${m.sender === 'user' ? 'User' : 'Assistant'}: ${m.text}`).join("\n");
+
         const prompt = `
 You are the TaskPilot AI Assistant, a helpful and professional project management expert.
 Today's Date: ${new Date().toDateString()}
 
-Your goal is to provide concise, accurate, and actionable advice to the user.
-Use Markdown formatting (like **bold**, *italics*, and lists) ONLY when it improves readability. 
-Do not force a specific number of bullet points unless naturally required by the answer.
+PREVIOUS CONVERSATION CONTEXT:
+${chatContext || "No previous history."}
 
-User Question:
+CURRENT USER QUESTION:
 ${userMessage}
+
+Your goal:
+1. Provide accurate and actionable advice.
+2. Maintain context from previous messages (e.g., if the user asks "tell me more" about a previous topic).
+3. Use Markdown for clarity (bold, italics, lists).
+4. Be concise and professional.
 `;
         const aiReply = await askGemini(prompt, 800);
         res.json({ reply: aiReply });
