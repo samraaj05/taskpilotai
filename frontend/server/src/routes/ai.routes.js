@@ -123,6 +123,7 @@ ${chatText}
 
         const prompt = `
 You are the TaskPilot AI Assistant, a helpful and professional project management expert.
+Today's Date: ${new Date().toDateString()}
 
 Your goal is to provide concise, accurate, and actionable advice to the user.
 Use Markdown formatting (like **bold**, *italics*, and lists) ONLY when it improves readability. 
