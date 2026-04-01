@@ -8,21 +8,22 @@ const Task = require('../models/Task');
 // NOTE: We avoid importing controllers to prevent circular dependencies
 
 const processAIInsights = async (job) => {
-    const { userEmail } = job.data;
-    logger.info(`Processing AI insights for ${userEmail}`);
+    const { userEmail, workspaceId = null } = job.data;
+    const cacheKey = workspaceId ? `ai_dashboard_${workspaceId}_${userEmail}` : `ai_dashboard_${userEmail}`;
+    logger.info(`Processing AI insights for ${userEmail} [Workspace: ${workspaceId || 'Global'}]`);
 
     try {
-        const stats = await generateStats(userEmail);
+        const stats = await generateStats(userEmail, workspaceId);
         const insights = generateRuleBasedInsights(stats);
         const recommendations = await getLLMRecommendations(stats);
 
         const data = { stats, insights, recommendations };
         // Update cache
-        await set(`ai_dashboard_${userEmail}`, data, 1800);
+        await set(cacheKey, data, 1800);
 
         // Notify via socket that insights are ready
         if (getIO()) {
-            getIO().emit('insightsUpdated', { userEmail });
+            getIO().emit('insightsUpdated', { userEmail, workspaceId });
         }
         logger.info(`AI Insights processed for ${userEmail}`);
     } catch (error) {

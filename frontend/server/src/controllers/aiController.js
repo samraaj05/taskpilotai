@@ -3,6 +3,7 @@ const axios = require('axios');
 const AIAnalysis = require('../models/AIAnalysis');
 const { generateStats, generateRuleBasedInsights, getLLMRecommendations } = require('../services/aiInsightsService');
 const { getOrSet, get } = require('../utils/cache');
+const redis = require('../config/redis');
 const { protect } = require('../middleware/authMiddleware');
 
 // Initialize Hugging Face
@@ -167,9 +168,13 @@ const getDashboardInsights = asyncHandler(async (req, res) => {
     // Cache miss: Trigger background job
     const { aiInsightsQueue } = require('../queue/queue');
     try {
-        await aiInsightsQueue.add(`ai_insights_${workspaceId}_${userEmail}`, { userEmail, workspaceId });
+        if (redis.status === 'ready') {
+            await aiInsightsQueue.add(`ai_insights_${workspaceId}_${userEmail}`, { userEmail, workspaceId });
+        } else {
+            console.warn(`[AI_CONTROLLER] Redis status: ${redis.status}. Skipping background job for ${userEmail}`);
+        }
     } catch (queueError) {
-        console.warn('AI insights queue unavailable (Redis down). Skipping background update.');
+        console.warn('AI insights queue unavailable (Redis down). Skipping background update.', { error: queueError.message });
     }
 
     // Return current stats (fast) + placeholder for insights

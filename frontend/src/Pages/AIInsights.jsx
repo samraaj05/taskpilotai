@@ -16,6 +16,10 @@ export default function AIInsights() {
   const { data: dashboard, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ['aiDashboard'],
     queryFn: () => base44.entities.AIAnalysis.dashboard(),
+    refetchInterval: (query) => {
+      // Poll every 5 seconds if the backend reports it's still processing
+      return query.state.data?.isProcessing ? 5000 : false;
+    },
   });
 
   useEffect(() => {
@@ -203,9 +207,19 @@ export default function AIInsights() {
                 <div key={idx} className="relative pl-8 group">
                   <div className="absolute left-0 top-0 h-full w-px bg-slate-800 group-last:h-5" />
                   <div className="absolute left-[-4px] top-1.5 h-2 w-2 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.5)]" />
-                  <p className="text-slate-300 text-sm leading-relaxed">{rec}</p>
+                  <p className={cn(
+                    "text-sm leading-relaxed",
+                    dashboard.isProcessing ? "text-slate-500 italic" : "text-slate-300"
+                  )}>{rec}</p>
                 </div>
               ))}
+
+              {dashboard.isProcessing && (
+                <div className="flex items-center gap-2 text-violet-400/60 text-xs animate-pulse pl-8">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>AI engine is still calculating depth insights...</span>
+                </div>
+              )}
 
               <div className="pt-4">
                 <div className="rounded-xl bg-violet-600/10 border border-violet-500/20 p-4">
