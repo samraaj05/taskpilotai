@@ -387,21 +387,35 @@ export default function TaskForm({
               </div>
 
               {aiSuggestion && (
-                <div className="space-y-2 text-sm">
-                  <p className="text-slate-300">
-                    <span className="text-violet-400">Suggested Assignee:</span> {aiSuggestion.suggested_assignee}
-                  </p>
-                  {aiSuggestion.reasoning && (
-                    <p className="text-slate-400 text-xs">{aiSuggestion.reasoning}</p>
+                <div className="space-y-2 text-sm animate-in fade-in slide-in-from-top-1 duration-300">
+                  {aiSuggestion.error ? (
+                    <div className="flex items-center gap-2 text-amber-400 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+                      <AlertTriangle className="w-4 h-4" />
+                      <span>{aiSuggestion.message}</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                        <p className="text-slate-300 mb-1">
+                          <span className="text-violet-400 font-medium">Suggested Assignee:</span>{" "}
+                          <span className="text-white">{aiSuggestion.suggested_assignee}</span>
+                        </p>
+                        {aiSuggestion.reasoning && (
+                          <p className="text-slate-400 text-xs leading-relaxed italic">
+                            "{aiSuggestion.reasoning}"
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="w-full bg-violet-600 hover:bg-violet-700 shadow-lg shadow-violet-600/20"
+                        onClick={applyAISuggestion}
+                      >
+                        Apply Suggestion
+                      </Button>
+                    </>
                   )}
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="bg-violet-600 hover:bg-violet-700"
-                    onClick={applyAISuggestion}
-                  >
-                    Apply Suggestion
-                  </Button>
                 </div>
               )}
             </div>

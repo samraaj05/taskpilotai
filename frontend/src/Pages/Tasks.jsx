@@ -181,50 +181,50 @@ export default function Tasks() {
   const requestAISuggestion = async (taskData) => {
     setAiLoading(true);
     try {
+      // 1. Simplify team data to avoid truncation
+      const teamContext = members.map(m => (
+        `${m.display_name || m.user_email}: Skills=${m.skills?.map(s => s.name).join(',')} Load=${m.current_workload}%`
+      )).join('\n');
+
       const prompt = `
-        Analyze this task and suggest the best team member to assign it to.
+        TASK: ${taskData.title}
+        DESCRIPTION: ${taskData.description || 'N/A'}
+        DOMAIN: ${taskData.domain}
+        SKILLS REQUIRED: ${taskData.required_skills?.join(', ') || 'N/A'}
         
-        Task Details:
-        - Title: ${taskData.title}
-        - Description: ${taskData.description || 'No description'}
-        - Domain: ${taskData.domain}
-        - Difficulty: ${taskData.difficulty}
-        - Priority: ${taskData.priority}
-        - Required Skills: ${taskData.required_skills?.join(', ') || 'None specified'}
-        - Estimated Hours: ${taskData.estimated_hours || 'Not specified'}
+        TEAM:
+        ${teamContext}
         
-        Available Team Members:
-        ${members.map(m => `
-          - ${m.display_name || m.user_email}: 
-            Skills: ${m.skills?.map(s => `${s.name} (${s.level})`).join(', ') || 'Not specified'}
-            Workload: ${m.current_workload || 0}%
-            Domains: ${m.domains?.join(', ') || 'Not specified'}
-        `).join('\n')}
-        
-        Based on skills match, workload balance, and domain expertise, suggest the best assignee.
+        INSTRUCTION: Suggest the best assignee and reviewer from the TEAM list.
+        Provide a concise reasoning based on skills and workload.
       `;
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,
-        prompt_prefix: "You are a lead project manager and technical lead helping to assign tasks within a team.",
+        prompt_prefix: "You are a professional project manager. Return ONLY JSON.",
         response_json_schema: {
           type: 'object',
           properties: {
-            suggested_assignee: { type: 'string', description: 'Email of suggested assignee' },
-            confidence_score: { type: 'number', description: 'Confidence 0-1' },
-            reasoning: { type: 'string', description: 'Why this person' },
-            estimated_hours: { type: 'number', description: 'Estimated hours to complete' },
-            suggested_due_date: { type: 'string', description: 'Suggested due date YYYY-MM-DD' },
+            suggested_assignee: { type: 'string', description: 'Email/Name of assignee' },
+            confidence_score: { type: 'number' },
+            reasoning: { type: 'string' },
+            suggested_due_date: { type: 'string' },
           },
           required: ['suggested_assignee', 'confidence_score', 'reasoning']
         },
       });
 
+      if (!result || !result.suggested_assignee) {
+        throw new Error("Invalid AI response");
+      }
+
       return result;
     } catch (error) {
-      console.error("AI Suggestion Error:", error);
-      // Optional: Add toast error here if you have access to a toast library in this context
-      return null;
+      console.error("AI Assignment Error:", error);
+      return { 
+        error: true, 
+        message: "AI was unable to provide a suggestion at this time. Please try again." 
+      };
     } finally {
       setAiLoading(false);
     }

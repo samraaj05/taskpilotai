@@ -105,16 +105,21 @@ ${typeof inputData === 'string' ? inputData : JSON.stringify(inputData, null, 2)
     }
 
     const text = result.choices[0].message.content;
+    
+    // Improved JSON extraction - handles markdown blocks, lead-in text, etc.
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const jsonString = jsonMatch ? jsonMatch[0] : text;
 
     try {
-        const jsonResponse = JSON.parse(jsonString);
+        // Clean up any remaining backticks if the regex was too greedy
+        const cleanJsonString = jsonString.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+        const jsonResponse = JSON.parse(cleanJsonString);
         res.status(200).json({
             success: true,
             data: jsonResponse
         });
     } catch (parseError) {
+        console.error("AI JSON Parse Error:", parseError.message, "Raw Text:", text);
         res.status(500).json({
             error: 'AI returned invalid JSON structure',
             raw_text: text
