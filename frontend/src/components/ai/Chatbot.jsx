@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '@/api/base44Client';
 import { toast } from 'sonner';
+import ReactMarkdown from 'react-markdown';
 
 const Chatbot = () => {
     const [messages, setMessages] = useState([]);
@@ -49,7 +50,18 @@ const Chatbot = () => {
                 {messages.map((msg, index) => (
                     <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[80%] p-3 rounded-lg ${msg.sender === 'user' ? 'bg-blue-500 text-white rounded-br-none' : msg.isError ? 'bg-red-100 text-red-700 rounded-bl-none' : 'bg-gray-100 text-gray-800 rounded-bl-none'}`}>
-                            {msg.text}
+                            <div className="prose prose-sm max-w-none dark:prose-invert">
+                                <ReactMarkdown
+                                    components={{
+                                        p: ({ node, ...props }) => <p className="mb-1 last:mb-0" {...props} />,
+                                        ul: ({ node, ...props }) => <ul className="list-disc ml-4 mb-1" {...props} />,
+                                        ol: ({ node, ...props }) => <ol className="list-decimal ml-4 mb-1" {...props} />,
+                                        li: ({ node, ...props }) => <li className="mb-0.5" {...props} />,
+                                    }}
+                                >
+                                    {msg.text}
+                                </ReactMarkdown>
+                            </div>
                         </div>
                     </div>
                 ))}

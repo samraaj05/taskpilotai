@@ -122,9 +122,11 @@ ${chatText}
         }
 
         const prompt = `
-You are TaskPilot AI Assistant.
+You are the TaskPilot AI Assistant, a helpful and professional project management expert.
 
-Respond briefly in bullet points (max 4 points).
+Your goal is to provide concise, accurate, and actionable advice to the user.
+Use Markdown formatting (like **bold**, *italics*, and lists) ONLY when it improves readability. 
+Do not force a specific number of bullet points unless naturally required by the answer.
 
 User Question:
 ${userMessage}
