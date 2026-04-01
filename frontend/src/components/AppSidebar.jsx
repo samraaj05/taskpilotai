@@ -92,9 +92,10 @@ export function AppSidebar() {
         <Sidebar>
             <SidebarContent>
                 <SidebarGroup>
-                    <div className="p-4 mb-2">
+                    <div className="p-4 mb-2 flex items-center gap-3">
+                        <img src="/logo.png" alt="TaskPilot Logo" className="w-8 h-8 rounded-lg shadow-sm" />
                         <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
-                            TASKPILOT
+                            TASKPILOTAI
                         </h1>
                     </div>
                     <div className="px-4 mb-4">

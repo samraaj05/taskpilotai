@@ -40,8 +40,8 @@ export default function Signup() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(124,58,237,0.1),transparent_70%)]" />
             <Card className="w-full max-w-md bg-slate-900/50 border-slate-800 backdrop-blur-xl relative z-10">
                 <CardHeader className="space-y-1 text-center">
-                    <div className="mx-auto w-12 h-12 bg-violet-600 rounded-xl flex items-center justify-center mb-4">
-                        <UserPlus className="w-6 h-6 text-white" />
+                    <div className="mx-auto mb-4">
+                        <img src="/logo.png" alt="TaskPilot Logo" className="w-16 h-16 rounded-2xl shadow-xl mx-auto border-2 border-violet-500/20" />
                     </div>
                     <CardTitle className="text-2xl font-bold text-white">Create Account</CardTitle>
                     <p className="text-slate-400">Join TaskPilot and start managing your productivity</p>
