@@ -204,7 +204,7 @@ const Chatbot = () => {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder={isListening ? "Listening..." : "Type your message..."}
-                    className="flex-1 bg-slate-50 dark:bg-slate-800/50 p-2.5 border-none rounded-xl focus:ring-2 focus:ring-blue-500/50 dark:text-white dark:placeholder:text-slate-500 transition-all outline-none"
+                    className="flex-1 bg-slate-50 dark:bg-slate-800/50 p-2.5 border-none rounded-xl focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-white dark:placeholder:text-slate-500 transition-all outline-none"
                     disabled={isLoading}
                 />
                 
