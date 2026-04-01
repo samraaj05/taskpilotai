@@ -43,7 +43,7 @@ const seedData = require('./src/config/seed');
 
 const { initIO } = require('./src/socket');
 
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 5005;
 // isProduction already defined at top
 
 // --- Environment Validation (Startup Guard) ---

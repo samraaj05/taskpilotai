@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import { API_BASE_URL } from '@/config/api';
 
 export const SocketContext = createContext();
 export const useSocket = () => useContext(SocketContext);
@@ -12,13 +13,13 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         if (token) {
-            // Ensure we connect to the backend port (5005) not frontend (5173)
-            const socketUrl = "http://localhost:5005";
+            // Ensure we connect to the backend (e.g. 5005) not frontend (5173)
+            const socketUrl = API_BASE_URL;
             console.log('Connecting to socket server at:', socketUrl);
 
             const socketInstance = io(socketUrl, {
                 auth: { token },
-                transports: ['websocket'],
+                transports: ['polling', 'websocket'],
             });
 
             socketInstance.on('connect', () => {

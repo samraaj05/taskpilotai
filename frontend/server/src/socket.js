@@ -14,8 +14,10 @@ const initIO = (server) => {
                 'http://127.0.0.1:5173',
                 'http://localhost:5174',
                 'http://127.0.0.1:5174',
-                'http://localhost:5000'
-            ],
+                'http://localhost:5000',
+                /\.vercel\.app$/, // Support Vercel deployments
+                /\.railway\.app$/  // Support Railway deployments
+            ].filter(Boolean),
             credentials: true,
         },
         // Apply connection throttling
