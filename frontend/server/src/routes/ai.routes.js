@@ -8,7 +8,7 @@ const ChatMessage = require('../models/ChatMessage');
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCcDwoHB4MPlkkw1TXU7UqCNEMEdSuaBkw";
 
-async function askGemini(promptText, maxOutputTokens = 150) {
+async function askGemini(promptText, maxOutputTokens = 800) {
     try {
         const response = await axios.post(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
@@ -65,7 +65,7 @@ Summarize this project in 4 bullet points.
 
 ${context}
 `;
-            const aiReply = await askGemini(prompt, 150);
+            const aiReply = await askGemini(prompt, 500);
             return res.json({ reply: aiReply });
         }
 
@@ -117,7 +117,7 @@ Summarize the following team discussion in 4 bullet points.
 Chat Messages:
 ${chatText}
 `;
-            const aiReply = await askGemini(prompt, 150);
+            const aiReply = await askGemini(prompt, 500);
             return res.json({ reply: aiReply });
         }
 
@@ -131,7 +131,7 @@ Do not force a specific number of bullet points unless naturally required by the
 User Question:
 ${userMessage}
 `;
-        const aiReply = await askGemini(prompt, 150);
+        const aiReply = await askGemini(prompt, 800);
         res.json({ reply: aiReply });
     } catch (error) {
         console.error("Gemini error:", error.response?.data || error.message);
