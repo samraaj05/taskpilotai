@@ -6,7 +6,7 @@ const Task = require('../models/Task');
 const User = require('../models/User');
 const ChatMessage = require('../models/ChatMessage');
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCcDwoHB4MPlkkw1TXU7UqCNEMEdSuaBkw";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 async function askGemini(promptText, maxOutputTokens = 800) {
     try {
@@ -21,7 +21,8 @@ async function askGemini(promptText, maxOutputTokens = 800) {
                     }
                 ],
                 generationConfig: {
-                    maxOutputTokens: maxOutputTokens
+                    maxOutputTokens: maxOutputTokens,
+                    temperature: 0.1
                 }
             }
         );

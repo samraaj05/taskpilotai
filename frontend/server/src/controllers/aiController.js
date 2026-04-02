@@ -8,7 +8,7 @@ const { protect } = require('../middleware/authMiddleware');
 
 // Initialize Google Gemini for AI insights
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 // @desc    Get AI insights from database
 // @route   GET /api/ai-insights
@@ -78,16 +78,27 @@ const invokeLLM = asyncHandler(async (req, res) => {
     try {
         const response = await axios.post(GEMINI_URL, {
             contents: [{ parts: [{ text: fullPrompt }] }],
-            generationConfig: { maxOutputTokens: 1000, temperature: 0.2 }
+            generationConfig: { maxOutputTokens: 1000, temperature: 0.1 }
         });
 
         const text = response.data.candidates[0].content.parts[0].text;
         
-        // Improved JSON extraction - handles markdown blocks, lead-in text, etc.
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        const jsonString = jsonMatch ? jsonMatch[0] : text;
+        // Robust JSON extraction
+        let cleanJsonString = text.trim();
+        
+        // Remove markdown code blocks if present
+        if (cleanJsonString.startsWith("```")) {
+            cleanJsonString = cleanJsonString.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+        }
+        
+        // If there's still non-JSON text around it (e.g., "Here is your JSON: {...}"), find the first { and last }
+        const firstBrace = cleanJsonString.indexOf('{');
+        const lastBrace = cleanJsonString.lastIndexOf('}');
+        
+        if (firstBrace !== -1 && lastBrace !== -1) {
+            cleanJsonString = cleanJsonString.substring(firstBrace, lastBrace + 1);
+        }
 
-        const cleanJsonString = jsonString.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
         const jsonResponse = JSON.parse(cleanJsonString);
         
         res.status(200).json({
