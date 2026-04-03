@@ -10,15 +10,15 @@ const {
 const { protect } = require('../middleware/authMiddleware');
 
 router.route('/')
-    .get(getInsights)
-    .post(createInsight);
+    .get(protect, getInsights)
+    .post(protect, createInsight);
 
 router.route('/invoke')
-    .post(invokeLLM);
+    .post(protect, invokeLLM);
 
 router.get('/dashboard', protect, getDashboardInsights);
 
 router.route('/:id')
-    .put(updateInsight);
+    .put(protect, updateInsight);
 
 module.exports = router;

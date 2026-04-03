@@ -1,4 +1,5 @@
 const asyncHandler = require('express-async-handler');
+const logger = require('../utils/logger');
 const crypto = require('crypto');
 const Invite = require('../models/Invite');
 const TeamMember = require('../models/TeamMember');
@@ -150,7 +151,7 @@ const createInvite = asyncHandler(async (req, res) => {
                 await sendInvitationEmail(email, role || 'member', inviteToken);
             }
         } catch (err) {
-            console.error("Mail send failed:", err.message);
+            logger.error(`Mail send failed: ${err.message}`);
         }
 
         res.status(201).json({

@@ -1,5 +1,6 @@
 require('dotenv').config();
-console.log("ENV LOADED:", !!process.env.SMTP_USER);
+const logger = require('./src/utils/logger');
+logger.info(`ENV LOADED: ${process.env.SMTP_USER ? 'true' : 'false'}`);
 
 const isProduction = process.env.NODE_ENV === 'production';
 // Cold Start Optimization: Preload essential modules
@@ -7,11 +8,11 @@ const path = require('path');
 const http = require('http');
 const mongoose = require('mongoose');
 
-console.log("DISABLE_EMAIL VALUE:", process.env.DISABLE_EMAIL);
-console.log("JWT_SECRET loaded:", !!process.env.JWT_SECRET);
+logger.info(`DISABLE_EMAIL VALUE: ${process.env.DISABLE_EMAIL}`);
+logger.info(`JWT_SECRET loaded: ${process.env.JWT_SECRET ? 'true' : 'false'}`);
 
 const express = require('express');
-const logger = require('./src/utils/logger');
+// Removed duplicate logger require here as it's now at the top
 
 // --- Global Crash Protection (Stabilization Mode) ---
 process.on('uncaughtException', (err) => {
@@ -21,7 +22,7 @@ process.on('uncaughtException', (err) => {
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('✖ System error intercepted (unhandledRejection):', reason);
+    logger.error('✖ System error intercepted (unhandledRejection):', reason);
     // Safe mode: Prevent crash
 });
 
@@ -68,7 +69,7 @@ if (!jwtSecret && isProduction) {
     logger.error('✖ CRITICAL: JWT_SECRET is missing in production. Authentication is insecure.');
 }
 
-console.log("SMTP CONFIG CHECK:", {
+logger.info("SMTP CONFIG CHECK", {
     host: process.env.SMTP_HOST,
     port: process.env.SMTP_PORT,
     userExists: !!process.env.SMTP_USER,
@@ -130,7 +131,7 @@ const startServer = async () => {
         if (workspaceCount === 0 && !isProduction) {
             try {
                 const seedMinimal = require('./seed_minimal');
-                console.log('--- [STARTUP] TRIGGERING MINIMAL DEMO SEEDING ---');
+                logger.info('--- [STARTUP] TRIGGERING MINIMAL DEMO SEEDING ---');
                 await seedMinimal();
                 logger.info('--- [STARTUP] Minimal Demo Seeding Completed ---');
             } catch (seedError) {
@@ -203,10 +204,11 @@ const startServer = async () => {
             const start = Date.now();
             res.on('finish', () => {
                 const duration = Date.now() - start;
-                console.log(`[REQUEST] ${req.method} ${req.url} ${res.statusCode} - ${duration}ms`);
+                logger.info(`[REQUEST] ${req.method} ${req.url} ${res.statusCode} - ${duration}ms`);
             });
             next();
         });
+        const envOrigins = process.env.CORS_ALLOWED_ORIGINS ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(o => o.trim()) : [];
         const allowedOrigins = [
             process.env.FRONTEND_URL,
             'http://localhost:5173',
@@ -214,7 +216,8 @@ const startServer = async () => {
             'http://localhost:5174',
             'http://127.0.0.1:5174',
             /\.vercel\.app$/, // Allow Vercel
-            /\.railway\.app$/  // Allow Railway
+            /\.railway\.app$/, // Allow Railway
+            ...envOrigins
         ].filter(Boolean);
 
         app.use(cors({
@@ -409,8 +412,8 @@ const startServer = async () => {
         });
 
     } catch (error) {
-        console.error(`❌ Server core startup failed: ${error.message}`);
-        console.error(error.stack);
+        logger.error(`❌ Server core startup failed: ${error.message}`);
+        logger.error(error.stack);
         // Force loud crash on ANY startup failure to ensure visibility
         process.exit(1);
     }
