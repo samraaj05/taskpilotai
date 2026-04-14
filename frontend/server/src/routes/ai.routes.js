@@ -6,10 +6,10 @@ const Task = require('../models/Task');
 const User = require('../models/User');
 const ChatMessage = require('../models/ChatMessage');
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
 async function askGemini(promptText, maxOutputTokens = 800) {
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     try {
+        console.log(`[AI_CHAT] Calling Gemini model: gemini-2.5-flash (Key: ${GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 5) + '...' + GEMINI_API_KEY.slice(-4) : 'MISSING'})`);
         const response = await axios.post(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
             {
@@ -150,7 +150,11 @@ Your goal:
         res.json({ reply: aiReply });
     } catch (error) {
         console.error("Gemini error:", error.response?.data || error.message);
-        res.status(500).json({ error: "AI processing failed" });
+        res.status(500).json({ 
+            success: false, 
+            error: "AI processing failed", 
+            details: error.response?.data?.error?.message || error.message 
+        });
     }
 });
 

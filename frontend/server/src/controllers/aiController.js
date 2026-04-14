@@ -7,8 +7,6 @@ const redis = require('../config/redis');
 const { protect } = require('../middleware/authMiddleware');
 
 // Initialize Google Gemini for AI insights
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 // @desc    Get AI insights from database
 // @route   GET /api/ai-insights
@@ -50,6 +48,10 @@ const createInsight = asyncHandler(async (req, res) => {
 // @access  Public
 const invokeLLM = asyncHandler(async (req, res) => {
     const { prompt: inputData, prompt_prefix, response_json_schema } = req.body;
+    
+    // Initialize Google Gemini dynamically
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     // Choose the appropriate prompt prefix
     const defaultPrefix = "You are an AI insights engine used in a production backend service.";
