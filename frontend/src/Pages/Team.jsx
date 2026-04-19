@@ -15,7 +15,6 @@ import {
   AlertTriangle, Clock, Target, Star, BarChart3, Activity, Brain, Sparkles, X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useToast } from "@/components/ui/use-toast";
 import { toast } from "sonner";
 
 const burnoutColors = {
@@ -33,7 +32,6 @@ const roleColors = {
 
 export default function Team() {
   const queryClient = useQueryClient();
-  const { toast: shadcnToast } = useToast();
   const [search, setSearch] = useState('');
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showMemberDialog, setShowMemberDialog] = useState(false);
@@ -92,21 +90,13 @@ export default function Team() {
   const handleInvite = async () => {
     try {
       if (!inviteEmail) {
-        shadcnToast({
-          variant: "destructive",
-          title: "Error",
-          description: "Please enter an email address",
-        });
+        toast.error("Please enter an email address");
         return;
       }
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(inviteEmail)) {
-        shadcnToast({
-          variant: "destructive",
-          title: "Error",
-          description: "Please enter a valid email address",
-        });
+        toast.error("Please enter a valid email address");
         return;
       }
 
@@ -119,18 +109,11 @@ export default function Team() {
       setInviteEmail('');
       setShowInviteDialog(false);
       queryClient.invalidateQueries({ queryKey: ['members'] });
-      shadcnToast({
-        title: "Invitation Sent",
-        description: "Team member invited successfully",
-      });
+      toast.success("Team member invited successfully");
     } catch (error) {
       console.error('Failed to send invitation:', error);
       const errorMsg = error.response?.data?.message || error.message || 'Failed to send invitation';
-      shadcnToast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMsg,
-      });
+      toast.error(errorMsg);
     } finally {
       setIsInviting(false);
     }
