@@ -48,32 +48,31 @@ api.interceptors.response.use(
 
         if (error.response) {
             const requestId = error.response.headers['x-request-id'];
-            if (requestId) {
-                console.error(`[REQUEST_FAIL] RequestID: ${requestId}`, {
-                    url: originalRequest?.url,
-                    status: error.response.status
-                });
-            } else {
-                console.error(`[REQUEST_FAIL]`, {
-                    url: originalRequest?.url,
-                    status: error.response.status
-                });
-            }
+            console.error(`[API_ERROR] ${originalRequest?.method} ${originalRequest?.url} - Status: ${error.response.status}`, {
+                requestId,
+                data: error.response.data
+            });
         }
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
+            console.log("[AUTH] Token expired, attempting refresh...");
             try {
                 const response = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {}, { withCredentials: true });
-                const { token } = response.data;
-                localStorage.setItem('accessToken', token);
-                api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-                return api(originalRequest);
+                const newToken = response.data.accessToken || response.data.data?.token;
+                
+                if (newToken) {
+                    console.log("[AUTH] Refresh successful");
+                    localStorage.setItem('accessToken', newToken);
+                    api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+                    originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+                    return api(originalRequest);
+                }
+                throw new Error("No token in refresh response");
             } catch (err) {
-                // Refresh failed - logout user
+                console.error("[AUTH] Refresh failed, logging out:", err.message);
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('user');
-                // window.location.href = '/login';
                 return Promise.reject(err);
             }
         }

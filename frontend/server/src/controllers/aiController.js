@@ -80,20 +80,29 @@ const invokeLLM = asyncHandler(async (req, res) => {
     try {
         const response = await axios.post(GEMINI_URL, {
             contents: [{ parts: [{ text: fullPrompt }] }],
-            generationConfig: { maxOutputTokens: 1000, temperature: 0.1 }
+            generationConfig: { 
+                maxOutputTokens: 1000, 
+                temperature: 0.1,
+                response_mime_type: "application/json"
+            }
         });
 
-        const text = response.data.candidates[0].content.parts[0].text;
+        const text = response.data.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (!text) {
+            console.error("Gemini Empty Response:", JSON.stringify(response.data, null, 2));
+            throw new Error("Empty response from Gemini API");
+        }
         
         // Robust JSON extraction
         let cleanJsonString = text.trim();
         
-        // Remove markdown code blocks if present
+        // Remove markdown code blocks if present (though response_mime_type should prevent them)
         if (cleanJsonString.startsWith("```")) {
             cleanJsonString = cleanJsonString.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
         }
         
-        // If there's still non-JSON text around it (e.g., "Here is your JSON: {...}"), find the first { and last }
+        // If there's still non-JSON text around it, find the first { and last }
         const firstBrace = cleanJsonString.indexOf('{');
         const lastBrace = cleanJsonString.lastIndexOf('}');
         
@@ -109,6 +118,9 @@ const invokeLLM = asyncHandler(async (req, res) => {
         });
     } catch (err) {
         console.error("AI Assignment Migration Error:", err.response?.data || err.message);
+        if (err instanceof SyntaxError) {
+            console.error("Invalid JSON from AI:", text);
+        }
         res.status(500).json({
             success: false,
             error: 'AI suggest failed',

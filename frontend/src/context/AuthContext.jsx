@@ -14,34 +14,48 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initAuth = async () => {
-            const storedToken = localStorage.getItem('accessToken');
-            if (storedToken) {
-                try {
-                    const response = await api.get(`/api/auth/me`);
-                    if (response.data && response.data.data) {
-                        setUser(response.data.data);
-                        setToken(storedToken);
+            // Safety timeout: If the backend takes longer than 15s to respond (cold start),
+            // we'll proceed anyway (likely showing the login screen or an empty dashboard).
+            const safetyTimer = setTimeout(() => {
+                setLoading(prev => {
+                    if (prev) {
+                        console.warn("[AUTH] Initial authentication check timed out (15s). Proceeding to render.");
+                        return false;
                     }
-                } catch (error) {
-                    console.error("Auth init failed:", error);
+                    return prev;
+                });
+            }, 15000);
+
+            try {
+                const storedToken = localStorage.getItem('accessToken');
+                if (storedToken) {
+                    try {
+                        const response = await api.get(`/api/auth/me`);
+                        if (response.data && response.data.data) {
+                            setUser(response.data.data);
+                            setToken(storedToken);
+                        }
+                    } catch (error) {
+                        console.error("Auth init failed:", error);
+                        localStorage.removeItem('accessToken');
+                        localStorage.removeItem('user');
+                        setToken(null);
+                        setUser(null);
+                    }
+                } else {
                     localStorage.removeItem('accessToken');
                     localStorage.removeItem('user');
-                    setToken(null);
                     setUser(null);
                 }
-            } else {
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('user');
-                setUser(null);
+            } catch (err) {
+                console.error("Critical error in initAuth:", err);
+            } finally {
+                clearTimeout(safetyTimer);
+                setLoading(false);
             }
-            setLoading(false);
         };
 
-        const timer = setTimeout(() => {
-            initAuth();
-        }, 0);
-
-        return () => clearTimeout(timer);
+        initAuth();
     }, []);
 
     const login = (userData, accessToken) => {

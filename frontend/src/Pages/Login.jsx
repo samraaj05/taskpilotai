@@ -28,19 +28,24 @@ export default function Login() {
             console.log("[LOGIN_RESPONSE]", response.data);
 
             if (response.data && response.data.success === true) {
-                const token = response.data.accessToken;
+                const { accessToken, user } = response.data;
+                
+                // Map fields if necessary (backend uses _id and name, vs id and full_name)
+                const normalizedUser = {
+                    id: user._id,
+                    full_name: user.name,
+                    email: user.email,
+                    role: user.role
+                };
 
-                console.log("[AUTH_TOKEN_RECEIVED]", token);
-
-                localStorage.setItem("accessToken", token);
-
-                console.log("[AUTH_TOKEN_SAVED]", localStorage.getItem("accessToken"));
+                console.log("[LOGIN_SUCCESS] Updating global state");
+                login(normalizedUser, accessToken);
 
                 console.log("[NAVIGATING_TO_DASHBOARD]");
-
                 navigate("/dashboard");
             } else {
                 console.log("[LOGIN_FAILED]", response.data);
+                toast.error(response.data?.message || "Login failed");
             }
         } catch (error) {
             console.error("Login Error:", error);
